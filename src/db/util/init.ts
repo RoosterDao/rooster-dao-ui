@@ -63,6 +63,8 @@ export async function initDb(name: string): Promise<DB> {
   let version = 0;
   let isReady = false;
 
+  console.log('initDb');
+
   while (!isReady && version <= 999) {
     try {
       db = await new DB(

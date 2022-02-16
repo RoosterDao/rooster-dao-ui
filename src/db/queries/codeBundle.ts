@@ -146,6 +146,8 @@ export async function createCodeBundle(
     date = moment.utc().format(),
   }: Partial<CodeBundleDocument>
 ): Promise<CodeBundleDocument> {
+  const codeBundles = getCodeBundleCollection(db);
+
   try {
     if (!creator) {
       return Promise.reject(new Error('Missing creator address'));
@@ -159,7 +161,13 @@ export async function createCodeBundle(
       return Promise.reject(new Error('Missing codeHash or name'));
     }
 
-    const newCode = getCodeBundleCollection(db).create({
+    const exists = await codeBundles.findOne({ codeHash });
+
+    if (exists) {
+      return Promise.resolve(exists);
+    }
+
+    const newCode = codeBundles.create({
       abi,
       codeHash,
       creator,

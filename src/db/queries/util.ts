@@ -13,10 +13,12 @@ export async function pushToRemote(db: Database, ...collections: string[]): Prom
 }
 
 export function getCodeBundleCollection(db: Database): Collection<CodeBundleDocument> {
+  console.log('getCodeBundleCollection');
   return db.collection('CodeBundle') as Collection<CodeBundleDocument>;
 }
 
 export function getContractCollection(db: Database): Collection<ContractDocument> {
+  console.log('getContractCollection');
   return db.collection('Contract') as Collection<ContractDocument>;
 }
 
