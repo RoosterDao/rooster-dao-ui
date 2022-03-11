@@ -4,9 +4,9 @@
 import { isWasm, u8aToString } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 import { useApi } from 'ui/contexts/ApiContext';
-import { Abi, ApiPromise, FileState, MetadataState, UseMetadata, Validation, VoidFn } from 'types';
+import { Abi, ApiPromise, FileState, MetadataState, OrFalsy, UseMetadata, Validation, VoidFn } from 'types';
 
-type OnChange = (_: FileState | undefined, __?: Record<string, unknown>) => void;
+type OnChange = (_: OrFalsy<FileState>, __?: Record<string, unknown>) => void;
 type OnRemove = VoidFn;
 
 interface Options {

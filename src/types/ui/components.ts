@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Props as ReactSelectProps } from 'react-select';
+import { OrFalsy } from 'types';
 import { ValidFormField } from './hooks';
 import { FileState, SimpleSpread } from './util';
 
@@ -29,6 +30,6 @@ export type InputFileProps = SimpleSpread<
     onChange: (_: FileState) => void;
     onRemove: () => void;
     successMessage?: React.ReactNode;
-    value?: FileState;
+    value: OrFalsy<FileState>;
   }
 >;

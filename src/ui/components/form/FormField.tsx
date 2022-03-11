@@ -1,8 +1,9 @@
 // Copyright 2021 @paritytech/contracts-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/outline';
+import { InformationCircleIcon, ExclamationCircleIcon, CheckCircleIcon } from '@heroicons/react/outline';
 import React, { useMemo } from 'react';
+import ReactTooltip from 'react-tooltip';
 import type { Validation } from 'types';
 import { classes } from 'ui/util';
 
@@ -26,6 +27,7 @@ export function getValidation({
 export function FormField({
   children,
   className,
+  help,
   id,
   isError,
   isSuccess,
@@ -48,9 +50,18 @@ export function FormField({
       {label && (
         <label
           className="block mb-1.5 text-sm font-semibold dark:text-white text-gray-600"
+          data-tip={help}
           htmlFor={id}
         >
           {label}
+          {help && (
+            <>
+              <InformationCircleIcon data-tip data-for='formFieldHelp' className='cursor-help inline ml-2 w-5 h-5 text-gray-500' />
+              <ReactTooltip id='formFieldHelp'>
+                {help}
+              </ReactTooltip>
+            </>
+          )}
         </label>
       )}
       {children}
