@@ -1,9 +1,10 @@
-// Copyright 2021 @paritytech/contracts-ui authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2022 @paritytech/contracts-ui authors & contributors
+// SPDX-License-Identifier: GPL-3.0-only
 
 import React from 'react';
 import { ArrowCircleRightIcon } from '@heroicons/react/outline';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { ContractDocument } from 'types';
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export function HeaderButtons({ contract }: Props) {
+  const { t } = useTranslation();
   return (
     <div className="inline-flex dark:text-gray-300 relative h-8 text-xs right-0">
       <div className="inline-flex h-8">
@@ -21,7 +23,7 @@ export function HeaderButtons({ contract }: Props) {
               aria-hidden="true"
               fontSize="1.5rem"
             />
-            Reinstantiate
+            {t('reinstantiate', 'Reinstantiate')}
           </button>
         </Link>
       </div>

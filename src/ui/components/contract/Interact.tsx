@@ -1,8 +1,9 @@
-// Copyright 2021 @paritytech/contracts-ui authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2022 @paritytech/contracts-ui authors & contributors
+// SPDX-License-Identifier: GPL-3.0-only
 
 import React, { useEffect, useState, useRef } from 'react';
 import { BN_ZERO } from '@polkadot/util';
+import { useTranslation } from 'react-i18next';
 import { ResultsOutput } from './ResultsOutput';
 import { AccountSelect } from 'ui/components/account';
 import { Dropdown, Button, Buttons } from 'ui/components/common';
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export const InteractTab = ({ contract }: Props) => {
+  const { t } = useTranslation();
   const { api, keyring } = useApi();
   const {
     value: message,
@@ -165,9 +167,12 @@ export const InteractTab = ({ contract }: Props) => {
         <Form>
           <FormField
             className="mb-8"
-            help={'The sending account for this interaction. Any transaction fees will be deducted from this account.'}
+            help={t(
+              'interactAccountHelp',
+              'The sending account for this interaction. Any transaction fees will be deducted from this account.'
+            )}
             id="accountId"
-            label="Account"
+            label={t('interactAccountLabel', 'Account')}
             {...accountIdValidation}
           >
             <AccountSelect
@@ -178,9 +183,12 @@ export const InteractTab = ({ contract }: Props) => {
             />
           </FormField>
           <FormField
-            help="The message to send to this contract. Parameters are adjusted based on the stored contract metadata."
+            help={t(
+              'interactMessageHelp',
+              'The message to send to this contract. Parameters are adjusted based on the stored contract metadata.'
+            )}
             id="message"
-            label="Message to Send"
+            label={t('interactMessageLabel', 'Message to Send')}
             {...messageValidation}
           >
             <Dropdown
@@ -190,11 +198,12 @@ export const InteractTab = ({ contract }: Props) => {
               onChange={setMessage}
               value={message}
             >
-              No messages found
+              {t('noMessagesFound', 'No messages found')}
             </Dropdown>
             {argValues && (
               <ArgumentForm
                 args={message.args || []}
+                registry={contract.abi.registry}
                 setArgValues={setArgValues}
                 argValues={argValues}
               />
@@ -203,20 +212,26 @@ export const InteractTab = ({ contract }: Props) => {
 
           {message.isPayable && (
             <FormField
-              help='The balance to transfer to the contract as part of this call.'
+              help={t(
+                'interactPaymentHelp',
+                'The balance to transfer to the contract as part of this call.'
+              )}
               id="value"
-              label="Payment"
+              label={t('interactPaymentLabel', 'Payment')}
               {...valueValidation}
             >
               <InputBalance value={value} onChange={setValue} placeholder="Value" />
             </FormField>
           )}
           <FormField
-            help="The maximum amount of gas (in millions of units) to use for this contract call. If the call requires more, it will fail."
+            help={t(
+              'interactMaxGasHelp',
+              'The maximum amount of gas (in millions of units) to use for this contract call. If the call requires more, it will fail.'
+            )}
             id="maxGas"
-            label="Max Gas Allowed (M)"
+            label={t('interactMaxGasLabel', 'Max Gas Allowed (M)')}
             isError={!weight.isValid}
-            message={!weight.isValid ? 'Invalid gas limit' : null}
+            message={!weight.isValid ? t('invalidGasLimit', 'Invalid gas limit') : null}
           >
             <InputGas
               estimatedWeight={estimatedWeight}
@@ -234,7 +249,7 @@ export const InteractTab = ({ contract }: Props) => {
               onClick={() => clickHandler()}
               variant="primary"
             >
-              Call
+              {t('call', 'Call')}
             </Button>
           ) : (
             <Button
@@ -242,7 +257,7 @@ export const InteractTab = ({ contract }: Props) => {
               onClick={read}
               variant="primary"
             >
-              Read
+              {t('read', 'Read')}
             </Button>
           )}
         </Buttons>

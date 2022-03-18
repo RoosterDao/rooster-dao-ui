@@ -1,9 +1,10 @@
-// Copyright 2021 @paritytech/contracts-ui authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2022 @paritytech/contracts-ui authors & contributors
+// SPDX-License-Identifier: GPL-3.0-only
 
 import React, { useEffect, useState } from 'react';
 import { isHex, isNumber } from '@polkadot/util';
 import { randomAsHex } from '@polkadot/util-crypto';
+import { useTranslation } from 'react-i18next';
 import { Button, Buttons } from '../common/Button';
 import { Form, FormField, getValidation } from '../form/FormField';
 import { InputBalance } from '../form/InputBalance';
@@ -22,6 +23,7 @@ import { useToggle } from 'ui/hooks/useToggle';
 import type { AbiMessage } from 'types';
 
 export function Step2() {
+  const { t } = useTranslation();
   const {
     data: { metadata },
     stepBackward,
@@ -69,7 +71,7 @@ export function Step2() {
   return metadata ? (
     <>
       <Form>
-        <FormField id="constructor" label="Deployment Constructor">
+        <FormField id="constructor" label={t('constructorLabel', 'Deployment Constructor')}>
           <Dropdown
             id="constructor"
             options={createConstructorOptions(metadata.constructors)}
@@ -88,8 +90,10 @@ export function Step2() {
             <ArgumentForm
               key={`args-${deployConstructor.method}`}
               args={deployConstructor.args}
+              registry={metadata.registry}
               setArgValues={setArgValues}
               argValues={argValues}
+              className="argument-form"
             />
           )}
         </FormField>
@@ -121,6 +125,7 @@ export function Step2() {
           }
           onClick={submitHandler}
           variant="primary"
+          data-cy="next-btn"
         >
           Next
         </Button>

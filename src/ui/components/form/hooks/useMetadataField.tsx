@@ -1,5 +1,5 @@
-// Copyright 2021 @paritytech/contracts-ui authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2022 @paritytech/contracts-ui authors & contributors
+// SPDX-License-Identifier: GPL-3.0-only
 
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
@@ -31,10 +31,7 @@ export const useMetadataField = (): UseMetadataField => {
     [codeHashUrlParam, codeBundleQuery.isLoading]
   );
 
-  const isStored = useMemo(
-    (): boolean => !!codeBundle?.document,
-    [codeBundle?.document]
-  );
+  const isStored = useMemo((): boolean => !!codeBundle?.document, [codeBundle?.document]);
 
   useEffect((): void => {
     if (codeHashUrlParam && !codeBundleQuery.isValid) {
@@ -46,6 +43,6 @@ export const useMetadataField = (): UseMetadataField => {
     file,
     isLoading,
     isStored,
-    ...metadata
+    ...metadata,
   };
 };

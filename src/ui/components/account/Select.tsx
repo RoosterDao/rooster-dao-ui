@@ -1,8 +1,9 @@
-// Copyright 2021 @paritytech/contracts-ui authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2022 @paritytech/contracts-ui authors & contributors
+// SPDX-License-Identifier: GPL-3.0-only
 
 import React, { useMemo } from 'react';
 import { GroupBase } from 'react-select';
+import { useTranslation } from 'react-i18next';
 import { Dropdown } from '../common/Dropdown';
 import { Account } from './Account';
 import { createAccountOptions } from 'ui/util/dropdown';
@@ -24,10 +25,12 @@ function Select({
   isDisabled,
   onChange,
   options,
-  placeholder = 'No Addresses Found',
+  placeholder,
   className,
   value,
 }: DropdownProps<string>) {
+  const { t } = useTranslation();
+
   return (
     <Dropdown
       className={classes('account-select', className)}
@@ -35,45 +38,41 @@ function Select({
       formatOptionLabel={Option}
       onChange={onChange}
       options={options}
-      placeholder={placeholder}
+      placeholder={placeholder || t('noAddressesFound', 'No Addresses Found')}
       isSearchable
       value={value}
     />
   );
 }
 
-export function AccountSelect({
-  placeholder = 'No Accounts Found',
-  ...props
-}: Props) {
+export function AccountSelect({ placeholder, ...props }: Props) {
+  const { t } = useTranslation();
   const { keyring } = useApi();
 
   return (
     <Select
       options={createAccountOptions(keyring?.getPairs())}
-      placeholder={placeholder}
+      placeholder={placeholder || t('noAccountsFound', 'No Accounts Found')}
       {...props}
     />
-  )
+  );
 }
 
-export function AddressSelect({
-  placeholder = 'No Addresses Found',
-  ...props
-}: Props) {
+export function AddressSelect({ placeholder, ...props }: Props) {
+  const { t } = useTranslation();
   const { keyring } = useApi();
   const { myContracts } = useDatabase();
 
   const options = useMemo((): GroupBase<DropdownOption<string>>[] => {
     return [
       {
-        label: 'My Accounts',
+        label: t('myAccounts', 'My Accounts'),
         options: createAccountOptions(keyring?.getPairs()),
       },
       ...(myContracts?.owned && myContracts.owned.length > 0
         ? [
             {
-              label: 'Uploaded Contracts',
+              label: t('uploadedContracts', 'Uploaded Contracts'),
               options: (myContracts?.owned || []).map(({ name, address }) => ({
                 label: name,
                 value: address,
@@ -84,7 +83,7 @@ export function AddressSelect({
       ...(myContracts?.starred && myContracts.starred.length > 0
         ? [
             {
-              label: 'Starred Contracts',
+              label: t('starredContracts', 'Starred Contracts'),
               options: (myContracts?.starred || []).reduce(
                 (result: DropdownOption<string>[], starredContract) => {
                   return [
@@ -100,12 +99,12 @@ export function AddressSelect({
           ]
         : []),
     ];
-  }, [keyring, myContracts?.owned, myContracts?.starred]);
+  }, [t, keyring, myContracts?.owned, myContracts?.starred]);
 
   return (
     <Select
       options={options}
-      placeholder={placeholder}
+      placeholder={placeholder || t('noAddressesFound', 'No Addresses Found')}
       {...props}
     />
   );

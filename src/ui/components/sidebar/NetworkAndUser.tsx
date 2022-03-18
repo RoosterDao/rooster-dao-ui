@@ -1,8 +1,9 @@
-// Copyright 2021 @paritytech/contracts-ui authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2022 @paritytech/contracts-ui authors & contributors
+// SPDX-License-Identifier: GPL-3.0-only
 
 import React from 'react';
 import { useNavigate } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { Dropdown } from '../common/Dropdown';
 import { RPCS } from '../../../constants';
 import { useApi } from 'ui/contexts';
@@ -10,16 +11,17 @@ import { classes } from 'ui/util';
 
 const options = [
   {
-    label: 'Local Node',
+    label: ['localNode', 'Local Node'],
     value: RPCS.LOCAL,
   },
   {
-    label: 'Canvas',
+    label: ['canvas', 'Canvas'],
     value: RPCS.CANVAS,
   },
 ];
 
 export function NetworkAndUser() {
+  const { t } = useTranslation();
   const { endpoint, status } = useApi();
   const navigate = useNavigate();
 
@@ -35,7 +37,7 @@ export function NetworkAndUser() {
         onChange={e => {
           navigate(`/?rpc=${e}`);
         }}
-        options={options}
+        options={options.map(option => ({ ...option, label: t(option.label[0], option.label[1]) }))}
         value={options.find(o => o.value === endpoint)?.value || 'ws://127.0.0.1:9944'}
       />
     </div>

@@ -1,8 +1,9 @@
-// Copyright 2021 @paritytech/contracts-ui authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2022 @paritytech/contracts-ui authors & contributors
+// SPDX-License-Identifier: GPL-3.0-only
 
 import { ChevronRightIcon } from '@heroicons/react/outline';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { SimpleSpread, VoidFn } from 'types';
 import { classes, truncate } from 'ui/util';
 
@@ -19,6 +20,8 @@ type Props = SimpleSpread<
 >;
 
 export function CodeHash({ className, codeHash, error, name, isError, isSuccess, onClick }: Props) {
+  const { t } = useTranslation();
+
   return (
     <div
       className={classes(
@@ -36,11 +39,15 @@ export function CodeHash({ className, codeHash, error, name, isError, isSuccess,
           {!isError ? name || 'On-chain Code Hash' : 'Invalid Code Hash'}
         </div>
         {codeHash && !isError && (
-          <div className="dark:text-gray-500 text-sm">Code hash: {truncate(codeHash)}</div>
+          <div className="dark:text-gray-500 text-sm">
+            {t('codeHash', 'Code hash')}
+            {': '}
+            {truncate(codeHash)}
+          </div>
         )}
         {isError && (
           <div className="dark:text-gray-500 text-sm">
-            {error || 'This code hash is not on-chain'}
+            {error || t('codeHashNotOnChain', 'This code hash is not on-chain')}
           </div>
         )}
       </div>

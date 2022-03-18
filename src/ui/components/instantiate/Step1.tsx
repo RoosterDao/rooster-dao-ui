@@ -1,17 +1,11 @@
-// Copyright 2021 @paritytech/contracts-ui authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2022 @paritytech/contracts-ui authors & contributors
+// SPDX-License-Identifier: GPL-3.0-only
 
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { Button, Buttons } from '../common/Button';
-import {
-  Input,
-  InputFile,
-  Form,
-  FormField,
-  useMetadataField,
-  getValidation
-} from '../form';
+import { Input, InputFile, Form, FormField, useMetadataField, getValidation } from '../form';
 import { Loader } from '../common/Loader';
 import { AccountSelect } from '../account';
 import { CodeHash } from './CodeHash';
@@ -20,6 +14,7 @@ import { useInstantiate } from 'ui/contexts';
 import { useAccountId } from 'ui/hooks';
 
 export function Step1() {
+  const { t } = useTranslation();
   const { codeHash: codeHashUrlParam } = useParams<{ codeHash: string }>();
 
   const { stepForward, setData, data, currentStep } = useInstantiate();
@@ -27,7 +22,15 @@ export function Step1() {
   const { value: accountId, onChange: setAccountId, ...accountIdValidation } = useAccountId();
   const { value: name, onChange: setName, ...nameValidation } = useNonEmptyString();
 
-  const { file, value: metadata, isLoading, isStored, onChange, onRemove, ...metadataValidation } = useMetadataField();
+  const {
+    file,
+    value: metadata,
+    isLoading,
+    isStored,
+    onChange,
+    onRemove,
+    ...metadataValidation
+  } = useMetadataField();
 
   useEffect((): void => {
     if (metadata && !name) {
@@ -54,9 +57,12 @@ export function Step1() {
     <Loader isLoading={isLoading}>
       <Form>
         <FormField
-          help="The account to use for this instantiation. The ees and storage deposit will be deducted from this account."
+          help={t(
+            'instantiateAccountHelp',
+            'The account to use for this instantiation. The fees and storage deposit will be deducted from this account.'
+          )}
           id="accountId"
-          label="Account"
+          label={t('instantiateAccountLabel', 'Account')}
           {...accountIdValidation}
         >
           <AccountSelect
@@ -67,36 +73,56 @@ export function Step1() {
           />
         </FormField>
         <FormField
-          help="A name for the new contract to help users distinguish it. Only used for display purposes."
+          help={t(
+            'instantiateNameHelp',
+            'A name for the new contract to help users distinguish it. Only used for display purposes.'
+          )}
           id="name"
-          label="Contract Name"
+          label={t('instantiateNameLabel', 'Contract Name')}
           {...nameValidation}
         >
           <Input
             id="contractName"
-            placeholder="Give your contract a descriptive name"
+            placeholder={t('instantiateNamePlaceholder', 'Give your contract a descriptive name')}
             value={name}
             onChange={setName}
           />
         </FormField>
         {codeHashUrlParam && (
           <FormField
-            help="The on-chain code hash that will be reinstantiated as a new contract."
+            help={t(
+              'instantiateCodeHashHelp',
+              'The on-chain code hash that will be reinstantiated as a new contract.'
+            )}
             id="metadata"
-            label="On-Chain Code"
+            label={t('instantiateCodeHashLabel', 'On-Chain Code')}
           >
             <CodeHash codeHash={codeHashUrlParam} name={name} />
           </FormField>
         )}
         {(!codeHashUrlParam || !isStored) && (
           <FormField
-            help="Helpful tooltip"
+            help={
+              codeHashUrlParam && !isStored
+                ? t(
+                    'instantiateUploadMetadataHelp',
+                    'The contract metadata JSON file to save for this contract. Constructor and message information will be derived from this file'
+                  )
+                : t(
+                    'instantiateUploadBundleHelp',
+                    'The contract bundle file containing the WASM blob and metadata.'
+                  )
+            }
             id="metadata"
-            label={codeHashUrlParam ? 'Upload Metadata' : 'Upload Contract Bundle'}
+            label={
+              codeHashUrlParam
+                ? t('instantiateUploadMetadataLabel', 'Upload Metadata')
+                : t('instantiateUploadBundleLabel', 'Upload Contract Bundle')
+            }
             {...getValidation(metadataValidation)}
           >
             <InputFile
-              placeholder="Click to select or drag & drop to upload file."
+              placeholder={t('inputFileHelp', 'Click to select or drag and drop to upload file.')}
               onChange={onChange}
               onRemove={onRemove}
               isError={metadataValidation.isError}
@@ -110,8 +136,9 @@ export function Step1() {
           isDisabled={!metadata || !nameValidation.isValid || !metadataValidation.isValid}
           onClick={submitStep1}
           variant="primary"
+          data-cy="next-btn"
         >
-          Next
+          {t('next', 'Next')}
         </Button>
       </Buttons>
     </Loader>

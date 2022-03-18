@@ -1,8 +1,9 @@
-// Copyright 2021 @paritytech/contracts-ui authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2022 @paritytech/contracts-ui authors & contributors
+// SPDX-License-Identifier: GPL-3.0-only
 
 import { CodeIcon } from '@heroicons/react/outline';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { CodeBundleDocument, ContractDocument, VoidFn } from 'types';
 import { classes } from 'ui/util';
 
@@ -41,11 +42,13 @@ export function SearchResults({
   onSelectCodeBundle,
   onSelectContract,
 }: Props) {
+  const { t } = useTranslation();
+
   return (
     <div className={classes('search-results', !isOpen && 'invisible', className)}>
       {onSelectContract && (
         <>
-          <div className="header">Contracts</div>
+          <div className="header">{t('contracts', 'Contracts')}</div>
           {contracts &&
             contracts?.length > 0 &&
             contracts.map(contract => {
@@ -63,13 +66,15 @@ export function SearchResults({
               );
             })}
           {!contracts ||
-            (contracts.length === 0 && <div className="text-sm">No matches found.</div>)}
+            (contracts.length === 0 && (
+              <div className="text-sm">{t('noMatchesFound', 'No matches found.')}</div>
+            ))}
         </>
       )}
 
       {onSelectCodeBundle && (
         <>
-          <div className="header">Code Bundles</div>
+          <div className="header">{t('codeBundles', 'Code Bundles')}</div>
           {codeBundles &&
             codeBundles?.length > 0 &&
             codeBundles.map(codeBundle => {
@@ -89,7 +94,9 @@ export function SearchResults({
               );
             })}
           {!codeBundles ||
-            (codeBundles.length === 0 && <div className="text-sm">No matches found.</div>)}
+            (codeBundles.length === 0 && (
+              <div className="text-sm">{t('noMatchesFound', 'No matches found.')}</div>
+            ))}
         </>
       )}
     </div>

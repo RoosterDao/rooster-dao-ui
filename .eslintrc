@@ -54,9 +54,9 @@
       [
         {
           "pattern": " Copyright \\d{4}(-\\d{4})? @paritytech/contracts-ui authors & contributors",
-          "template": " Copyright 2021 @paritytech/contracts-ui authors & contributors"
+          "template": " Copyright 2022 @paritytech/contracts-ui authors & contributors"
         },
-        " SPDX-License-Identifier: Apache-2.0"
+        " SPDX-License-Identifier: GPL-3.0-only"
       ],
       2
     ],
@@ -78,6 +78,7 @@
     "import/newline-after-import": "warn",
     "@typescript-eslint/restrict-template-expressions": "off",
     "react/prop-types": "off",
+    "@typescript-eslint/no-misused-promises": "off",
     "@typescript-eslint/no-unused-vars": "off",
     "@typescript-eslint/no-empty-function": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",

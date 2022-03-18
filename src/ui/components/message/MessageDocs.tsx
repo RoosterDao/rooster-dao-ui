@@ -1,7 +1,8 @@
-// Copyright 2021 @paritytech/contracts-ui authors & contributors
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2022 @paritytech/contracts-ui authors & contributors
+// SPDX-License-Identifier: GPL-3.0-only
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Disclosure } from '@headlessui/react';
@@ -14,11 +15,13 @@ interface Props extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const MessageDocs = ({ message, message: { docs } }: Props) => {
+  const { t } = useTranslation();
+
   return (
     <Disclosure defaultOpen>
       {({ open }) => (
         <div className="collapsible-panel">
-          <Disclosure.Button className="panel-title text-xs leading-normal p-3 dark:bg-elevation-1 text-mono flex w-full">
+          <Disclosure.Button className="panel-title text-xs leading-normal text-left p-3 dark:bg-elevation-1 text-mono flex w-full">
             <ChevronUpIcon
               className={`${open ? 'transform rotate-180' : ''} w-5 h-5 mr-1 border-gray-500`}
             />
@@ -29,7 +32,7 @@ export const MessageDocs = ({ message, message: { docs } }: Props) => {
             {docs.length ? (
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{docs.join('\r\n')}</ReactMarkdown>
             ) : (
-              <i>No documentation provided</i>
+              <i>{t('noDocumentationProvided', 'No documentation provided')}</i>
             )}
           </Disclosure.Panel>
         </div>
