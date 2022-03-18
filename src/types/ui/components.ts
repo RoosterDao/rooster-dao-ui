@@ -3,9 +3,8 @@
 
 import React from 'react';
 import { Props as ReactSelectProps } from 'react-select';
-import { OrFalsy } from 'types';
 import { ValidFormField } from './hooks';
-import { FileState, SimpleSpread } from './util';
+import { FileState, OrFalsy, SimpleSpread } from './util';
 
 export interface DropdownOption<T> {
   value: T;

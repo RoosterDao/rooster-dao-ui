@@ -52,20 +52,12 @@ export function FormField({
   return (
     <div className={classes('form-field', className)}>
       {label && (
-        <label
-          className="block mb-1.5 text-sm font-semibold dark:text-white text-gray-600"
-          data-tip={help}
-          htmlFor={id}
-        >
+        <label data-tip={help} htmlFor={id}>
           {label}
           {help && (
             <>
-              <InformationCircleIcon
-                data-tip
-                data-for="formFieldHelp"
-                className="cursor-help inline ml-2 w-5 h-5 text-gray-500"
-              />
-              <ReactTooltip id="formFieldHelp">{help}</ReactTooltip>
+              <InformationCircleIcon data-tip data-for={`formFieldHelp-${id}`} />
+              <ReactTooltip id={`formFieldHelp-${id}`}>{help}</ReactTooltip>
             </>
           )}
         </label>

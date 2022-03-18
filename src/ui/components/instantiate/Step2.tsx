@@ -40,7 +40,7 @@ export function Step2() {
       return { isValid: true };
     }
 
-    return { isValid: false, isError: true, message: 'Invalid hex string' };
+    return { isValid: false, isError: true, message: t('invalidHexString', 'Invalid hex string') };
   });
 
   const [constructorIndex, setConstructorIndex] = useState<number>(0);
@@ -55,7 +55,7 @@ export function Step2() {
 
   const [isUsingSalt, toggleIsUsingSalt] = useToggle(true);
 
-  const submitHandler = () => {
+  const onSubmit = () => {
     onFinalize &&
       onFinalize({
         constructorIndex,
@@ -71,7 +71,14 @@ export function Step2() {
   return metadata ? (
     <>
       <Form>
-        <FormField id="constructor" label={t('constructorLabel', 'Deployment Constructor')}>
+        <FormField
+          help={t(
+            'instantiateConstructorHelp',
+            'The constructor to use for this contract deployment.'
+          )}
+          id="constructor"
+          label={t('instantiateConstructorLabel', 'Deployment Constructor')}
+        >
           <Dropdown
             id="constructor"
             options={createConstructorOptions(metadata.constructors)}
@@ -84,7 +91,7 @@ export function Step2() {
               }
             }}
           >
-            No constructors found
+            {t('noConstructorsFound', 'No constructors found')}
           </Dropdown>
           {deployConstructor && argValues && (
             <ArgumentForm
@@ -98,18 +105,38 @@ export function Step2() {
           )}
         </FormField>
         {deployConstructor?.isPayable && (
-          <FormField id="value" label="Value" {...valueValidation}>
+          <FormField
+            help={t(
+              'instantiateValueHelp',
+              'The balance to transfer from the `origin` to the newly created contract.'
+            )}
+            id="value"
+            label={t('instantiateValueLabel', 'Value')}
+            {...valueValidation}
+          >
             <InputBalance id="value" value={value} onChange={onChangeValue} />
           </FormField>
         )}
-        <FormField id="salt" label="Deployment Salt" {...getValidation(salt)}>
+        <FormField
+          help={t(
+            'instantiateSaltHelp',
+            'A hex or string value that acts as a salt for this deployment.'
+          )}
+          id="salt"
+          label={t('instantiateSaltLabel', 'Deployment Salt')}
+          {...getValidation(salt)}
+        >
           <InputSalt isActive={isUsingSalt} toggleIsActive={toggleIsUsingSalt} {...salt} />
         </FormField>
         <FormField
+          help={t(
+            'instantiateMaxGasHelp',
+            'The maximum amount of gas (in millions of units) to use for this instantiation. If the transaction requires more, it will fail.'
+          )}
           id="maxGas"
-          label="Max Gas Allowed"
+          label={t('instantiateMaxGasLabel', 'Max Gas Allowed (M)')}
           isError={!weight.isValid}
-          message={!weight.isValid ? 'Invalid gas limit' : null}
+          message={!weight.isValid ? t('invalidGasLimit', 'Invalid gas limit') : null}
         >
           <InputGas isCall {...weight} />
         </FormField>
@@ -123,15 +150,15 @@ export function Step2() {
             !deployConstructor?.method ||
             !argValues
           }
-          onClick={submitHandler}
+          onClick={onSubmit}
           variant="primary"
           data-cy="next-btn"
         >
-          Next
+          {t('next', 'Next')}
         </Button>
 
         <Button onClick={stepBackward} variant="default">
-          Go Back
+          {t('back', 'Go Back')}
         </Button>
       </Buttons>
     </>
