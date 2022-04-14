@@ -1,7 +1,0 @@
-/*
-object-assign
-(c) Sindre Sorhus
-@license MIT
-*/
-
-/*! noble-secp256k1 - MIT License (c) 2019 Paul Miller (paulmillr.com) */
