@@ -30,6 +30,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Install substrate-contracts-node
+        uses: actions-rs/install@v0.1
+        with:
+          crate: contracts-node
+      
+      - name: Run substrate-contracts-node
+        run: substrate-contracts-node --dev
+
       # Install NPM dependencies, cache them correctly
       # and run all Cypress tests
       - name: Cypress run
