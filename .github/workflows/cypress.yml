@@ -30,10 +30,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install substrate-contracts-node
-        uses: actions-rs/install@v0.1
+      - name: Install Rust Toolchain
+        uses: actions-rs/toolchain@v1
         with:
-          crate: contracts-node
+          profile: minimal
+          toolchain: nightly
+
+      - name: Install substrate-contracts-node
+        run: cargo install contracts-node --git https://github.com/paritytech/substrate-contracts-node.git --force --locked
       
       - name: Run substrate-contracts-node
         run: substrate-contracts-node --dev
