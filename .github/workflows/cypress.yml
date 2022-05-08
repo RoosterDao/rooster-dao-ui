@@ -34,6 +34,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
+          target: wasm32-unknown-unknown
           toolchain: nightly
 
       - name: Install substrate-contracts-node
