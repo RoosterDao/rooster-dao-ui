@@ -7,6 +7,12 @@ Based on tech stack used in https://github.com/paritytech/contracts-ui
 3. Run `yarn install`
 4. Run `yarn start`
 5. Open `localhost:<port>` as shown in terminal
+6. Upload the `.contract` files from the `contracts` folder to your local node with https://paritytech.github.io/contracts-ui
+7. Copy the smart contract addresses to the RoosterDAO UI prototype
+
+
+Original ReadMe:
+
 
 # Substrate Contracts UI
 
