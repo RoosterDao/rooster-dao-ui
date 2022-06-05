@@ -3050,77 +3050,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"contracts-ui@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "contracts-ui@workspace:."
-  dependencies:
-    "@esbuild-plugins/node-globals-polyfill": ^0.1.1
-    "@headlessui/react": ^1.6.1
-    "@heroicons/react": ^1.0.6
-    "@nabla/vite-plugin-eslint": ^1.4.0
-    "@polkadot/api": 8.3.2
-    "@polkadot/api-contract": 8.3.2
-    "@polkadot/extension-dapp": ^0.43.1
-    "@polkadot/keyring": ^9.1.1
-    "@polkadot/types": ^8.3.2
-    "@polkadot/ui-keyring": ^2.1.1
-    "@polkadot/ui-shared": ^2.1.1
-    "@polkadot/util": ^9.1.1
-    "@polkadot/util-crypto": ^9.1.1
-    "@tailwindcss/forms": ^0.5.1
-    "@textile/crypto": ^4.2.1
-    "@textile/threaddb": 0.2.3
-    "@types/bcryptjs": ^2.4.2
-    "@types/big.js": ^6.1.3
-    "@types/node": ^17.0.33
-    "@types/react-dom": ^18.0.4
-    "@types/react-dropzone": ^5.1.0
-    "@types/react-router": ^5.1.18
-    "@types/react-router-dom": ^5.3.3
-    "@types/react-select": ^5.0.1
-    "@typescript-eslint/eslint-plugin": ^5.23.0
-    "@typescript-eslint/parser": ^5.23.0
-    "@vitejs/plugin-react": ^1.3.2
-    autoprefixer: ^10.4.7
-    bcryptjs: ^2.4.3
-    big.js: ^6.1.1
-    buffer: ^6.0.3
-    copy-to-clipboard: ^3.3.1
-    cypress: ^9.6.1
-    cypress-file-upload: ^5.0.8
-    cypress-wait-until: ^1.7.2
-    date-fns: ^2.28.0
-    eslint: ^8.15.0
-    eslint-config-prettier: ^8.5.0
-    eslint-import-resolver-typescript: ^2.7.1
-    eslint-plugin-header: ^3.1.1
-    eslint-plugin-import: ^2.26.0
-    eslint-plugin-react: ^7.29.4
-    eslint-plugin-react-hooks: ^4.5.0
-    husky: ^8.0.1
-    lint-staged: ">=12.4.1"
-    nanoid: ^3.3.1
-    postcss: ^8.4.13
-    postcss-import: ^14.1.0
-    prettier: ^2.6.2
-    react: ^18.1.0
-    react-dom: ^18.1.0
-    react-dropzone: ^14.2.1
-    react-markdown: ^8.0.3
-    react-router: ^6.3.0
-    react-router-dom: ^6.3.0
-    react-select: ^5.3.2
-    react-tooltip: ^4.2.21
-    remark-gfm: ^3.0.1
-    styled-components: ^5.3.5
-    tailwind-merge: ^1.2.1
-    tailwindcss: ^3.0.24
-    typescript: ^4.6.4
-    vite: ^2.9.9
-    vite-tsconfig-paths: ^3.4.1
-  languageName: unknown
-  linkType: soft
-
 "convert-source-map@npm:^1.5.0, convert-source-map@npm:^1.7.0":
   version: 1.8.0
   resolution: "convert-source-map@npm:1.8.0"
@@ -7821,6 +7750,77 @@ __metadata:
   checksum: 06c62933e6e81a1c8c684d7d576e507081aabdb63cc0c91bca86b7348b66df03b77827068e4990b8b6c738bd3ef66dcc8c7ed7e0ea40b736068e7618f693133e
   languageName: node
   linkType: hard
+
+"rooster-dao-ui@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "rooster-dao-ui@workspace:."
+  dependencies:
+    "@esbuild-plugins/node-globals-polyfill": ^0.1.1
+    "@headlessui/react": ^1.6.1
+    "@heroicons/react": ^1.0.6
+    "@nabla/vite-plugin-eslint": ^1.4.0
+    "@polkadot/api": 8.3.2
+    "@polkadot/api-contract": 8.3.2
+    "@polkadot/extension-dapp": ^0.43.1
+    "@polkadot/keyring": ^9.1.1
+    "@polkadot/types": ^8.3.2
+    "@polkadot/ui-keyring": ^2.1.1
+    "@polkadot/ui-shared": ^2.1.1
+    "@polkadot/util": ^9.1.1
+    "@polkadot/util-crypto": ^9.1.1
+    "@tailwindcss/forms": ^0.5.1
+    "@textile/crypto": ^4.2.1
+    "@textile/threaddb": 0.2.3
+    "@types/bcryptjs": ^2.4.2
+    "@types/big.js": ^6.1.3
+    "@types/node": ^17.0.33
+    "@types/react-dom": ^18.0.4
+    "@types/react-dropzone": ^5.1.0
+    "@types/react-router": ^5.1.18
+    "@types/react-router-dom": ^5.3.3
+    "@types/react-select": ^5.0.1
+    "@typescript-eslint/eslint-plugin": ^5.23.0
+    "@typescript-eslint/parser": ^5.23.0
+    "@vitejs/plugin-react": ^1.3.2
+    autoprefixer: ^10.4.7
+    bcryptjs: ^2.4.3
+    big.js: ^6.1.1
+    buffer: ^6.0.3
+    copy-to-clipboard: ^3.3.1
+    cypress: ^9.6.1
+    cypress-file-upload: ^5.0.8
+    cypress-wait-until: ^1.7.2
+    date-fns: ^2.28.0
+    eslint: ^8.15.0
+    eslint-config-prettier: ^8.5.0
+    eslint-import-resolver-typescript: ^2.7.1
+    eslint-plugin-header: ^3.1.1
+    eslint-plugin-import: ^2.26.0
+    eslint-plugin-react: ^7.29.4
+    eslint-plugin-react-hooks: ^4.5.0
+    husky: ^8.0.1
+    lint-staged: ">=12.4.1"
+    nanoid: ^3.3.1
+    postcss: ^8.4.13
+    postcss-import: ^14.1.0
+    prettier: ^2.6.2
+    react: ^18.1.0
+    react-dom: ^18.1.0
+    react-dropzone: ^14.2.1
+    react-markdown: ^8.0.3
+    react-router: ^6.3.0
+    react-router-dom: ^6.3.0
+    react-select: ^5.3.2
+    react-tooltip: ^4.2.21
+    remark-gfm: ^3.0.1
+    styled-components: ^5.3.5
+    tailwind-merge: ^1.2.1
+    tailwindcss: ^3.0.24
+    typescript: ^4.6.4
+    vite: ^2.9.9
+    vite-tsconfig-paths: ^3.4.1
+  languageName: unknown
+  linkType: soft
 
 "run-parallel@npm:^1.1.9":
   version: 1.2.0

@@ -1,3 +1,13 @@
+# RoosterDao UI Protoype
+
+Based on tech stack used in https://github.com/paritytech/contracts-ui
+
+1. Clone this repository
+2. Checkout branch "rooster-dao-ui-prototype"
+3. Run `yarn install`
+4. Run `yarn start`
+5. Open `localhost:<port>` as shown in terminal
+
 # Substrate Contracts UI
 
 Substrate Contracts UI is a web application for deploying and interacting with WASM smart contracts on Substrate blockchains that include the FRAME Contracts Pallet.
