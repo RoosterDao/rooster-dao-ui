@@ -7,6 +7,7 @@ import { HashRouter, Route, Routes } from 'react-router-dom';
 import App from './App';
 import '../src/ui/styles/main.css';
 import '@polkadot/api-augment';
+import { Flipper } from './components/Flipper';
 
 globalThis.Buffer = Buffer;
 
@@ -20,7 +21,7 @@ root.render(
   <HashRouter>
     <Routes>
       <Route path="/" element={<App />}>
-        <Route path="test-flipper" element={<div>Test</div>} />
+        <Route path="test-flipper" element={<Flipper/>} />
         <Route path="test-erc721" element={<div>Test 2</div>} />
       </Route>
     </Routes>
