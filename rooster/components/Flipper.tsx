@@ -30,17 +30,16 @@ export function Flipper() {
   const [result, setResult] = useState(null);
 
   const { api } = useApi();
-  const weight = useWeight(toBalance(api, 0.1));
+  const weight = useWeight(toBalance(api, 1));
   const { data: contractData, isLoading, isValid } = useContract(address);
 
   const flip = async () => {
-    web3FromAddress(accountId).then(injector =>
-      contract.tx
-        .flip({ value: 0, gasLimit: 3000n * 1000000n, storageDepositLimit: undefined })
-        .signAndSend(accountId, { signer: injector?.signer || undefined }, result => {
-          setResult(result);
-        })
-    );
+    let injector = null;
+    new Contract(api, new Abi(abi), address).tx
+      .flip({ value: undefined, gasLimit: weight.weight.addn(1), storageDepositLimit: undefined })
+      .signAndSend(accountId, { signer: injector?.signer || undefined }, async result => {
+        await result;
+      });
   };
 
   useEffect(() => {
