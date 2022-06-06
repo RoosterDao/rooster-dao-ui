@@ -17,7 +17,6 @@ import { getContractInfo } from '../../src/api';
 export function Flipper() {
   const [savedAddress, saveAddress] = useLocalStorage<string>('flipper_address', '');
   const { value: accountId, onChange: setAccountId, ...accountIdValidation } = useAccountId();
-  const { value: balance, onChange: setValue, ...valueValidation } = useBalance(100);
 
   const [address, setAddress] = useState(savedAddress);
   const [isOnChain, setIsOnChain] = useState(true);
@@ -38,8 +37,10 @@ export function Flipper() {
   }, [isOnChain]);
 
   useEffect(() => {
-    console.log("account address", accountId);
-  }, [accountId]);
+    api.query.system.account(accountId).then(accountInfo => {
+      setAccountBalance(accountInfo.data.free.toHuman());
+    });
+  }, [accountId, api]);
 
   return (
     <Page
@@ -89,9 +90,8 @@ export function Flipper() {
                         onChange={setAccountId}
                       />
                     </FormField>
-                  
+                    Balance: {accountBalance} sats
                   </Form>
-                
                 </div>
               </div>
             </div>
