@@ -16,7 +16,6 @@ import { useLocalStorage, useAccountId, useWeight, useContract } from '../../src
 import { getContractInfo, toBalance } from '../../src/api';
 import { Abi, ContractPromise as Contract } from '../../src/types';
 import abi from '../../contracts/flipper/metadata.json';
-import { web3FromAddress } from '@polkadot/extension-dapp';
 
 export function Flipper() {
   const [savedAddress, saveAddress] = useLocalStorage<string>('flipper_address', '');
@@ -26,19 +25,29 @@ export function Flipper() {
   const [isOnChain, setIsOnChain] = useState(true);
   const [accountBalance, setAccountBalance] = useState(0);
   const [currentState, setFlipState] = useState<boolean>(false);
-  const [contract, setContract] = useState(null);
-  const [result, setResult] = useState(null);
+  const [flipEvents, setFlipEvents] = useState([]);
 
-  const { api } = useApi();
+  const { api, keyring } = useApi();
   const weight = useWeight(toBalance(api, 1));
   const { data: contractData, isLoading, isValid } = useContract(address);
 
   const flip = async () => {
     let injector = null;
+    const accountOrPair = keyring.getPair(accountId);
     new Contract(api, new Abi(abi), address).tx
       .flip({ value: undefined, gasLimit: weight.weight.addn(1), storageDepositLimit: undefined })
-      .signAndSend(accountId, { signer: injector?.signer || undefined }, async result => {
+      .signAndSend(accountOrPair, { signer: injector?.signer || undefined }, async result => {
         await result;
+        result.events.forEach(record => {
+          const { event } = record;
+          if (api.events.contracts.ContractEmitted.is(event)) {
+            const [account_id, contract_evt] = event.data;
+            const decoded = new Abi(abi).decodeEvent(contract_evt);
+            if (decoded.event.identifier === 'Flipped') {
+              setFlipEvents([...flipEvents, 'Flipped by: ' + accountOrPair.meta.name]);
+            }
+          }
+        });
       });
   };
 
@@ -51,17 +60,19 @@ export function Flipper() {
   useEffect(() => {
     if (isOnChain) {
       saveAddress(address);
-      const contract = new Contract(api, new Abi(abi), address);
-      setContract(contract);
-      contract.query.get(address, {}).then(result => setFlipState(result.output?.isTrue));
+      new Contract(api, new Abi(abi), address).query.get(address, {}).then(result => setFlipState(result.output?.isTrue));
     }
   }, [isOnChain]);
+
+  useEffect(() => {
+    new Contract(api, new Abi(abi), address).query.get(address, {}).then(result => setFlipState(result.output?.isTrue));
+  }, [flipEvents]);
 
   useEffect(() => {
     api.query.system.account(accountId).then(accountInfo => {
       setAccountBalance(accountInfo.data.free.toHuman());
     });
-  }, [accountId, api]);
+  }, [accountId, api, flipEvents]);
 
   return (
     <PageFull
@@ -151,6 +162,9 @@ export function Flipper() {
           <h1 className="text-xl font-semibold dark:text-white text-gray-700 capitalize">
             Recent events
           </h1>
+          {flipEvents.map(event => (
+            <div>{event}</div>
+          ))}
         </div>
       </div>
     </PageFull>
