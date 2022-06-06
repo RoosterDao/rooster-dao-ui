@@ -14,6 +14,9 @@ import { useLocalStorage, useAccountId, useWeight, useContract } from '../../src
 
 // utils
 import { getContractInfo, toBalance } from '../../src/api';
+import { Abi, ContractPromise as Contract } from '../../src/types';
+import abi from '../../contracts/flipper/metadata.json';
+import { web3FromAddress } from '@polkadot/extension-dapp';
 
 export function Flipper() {
   const [savedAddress, saveAddress] = useLocalStorage<string>('flipper_address', '');
@@ -23,26 +26,39 @@ export function Flipper() {
   const [isOnChain, setIsOnChain] = useState(true);
   const [accountBalance, setAccountBalance] = useState(0);
   const [currentState, setFlipState] = useState<boolean>(false);
+  const [contract, setContract] = useState(null);
+  const [result, setResult] = useState(null);
 
   const { api } = useApi();
   const weight = useWeight(toBalance(api, 0.1));
   const { data: contractData, isLoading, isValid } = useContract(address);
 
+  const flip = async () => {
+    web3FromAddress(accountId).then(injector =>
+      contract.tx
+        .flip({ value: 0, gasLimit: 3000n * 1000000n, storageDepositLimit: undefined })
+        .signAndSend(accountId, { signer: injector?.signer || undefined }, result => {
+          setResult(result);
+        })
+    );
+  };
+
   useEffect(() => {
     getContractInfo(api, address)
       .then(info => setIsOnChain(!!info))
       .catch(() => setIsOnChain(false));
-      console.log(contractData)
   }, [api, address]);
 
   useEffect(() => {
     if (isOnChain) {
       saveAddress(address);
+      const contract = new Contract(api, new Abi(abi), address);
+      setContract(contract);
+      contract.query.get(address, {}).then(result => setFlipState(result.output?.isTrue));
     }
   }, [isOnChain]);
 
   useEffect(() => {
-    
     api.query.system.account(accountId).then(accountInfo => {
       setAccountBalance(accountInfo.data.free.toHuman());
     });
@@ -67,7 +83,7 @@ export function Flipper() {
               label="Flipper contract address"
               isError={!isOnChain}
               message={'Please enter a valid smart contract address to continue.'}
-            > 
+            >
               <Input
                 isDisabled={false}
                 placeholder="Enter the address of the flipper smart contract"
@@ -76,7 +92,6 @@ export function Flipper() {
                 type="text"
                 value={address}
               />
-             
             </FormField>
             <FormField
               className="mb-8"
@@ -117,7 +132,7 @@ export function Flipper() {
               <InputGas isCall={true} withEstimate {...weight} />
             </FormField>
             <Buttons>
-              <Button variant="primary" isDisabled={!isOnChain}>
+              <Button variant="primary" isDisabled={!isOnChain} onClick={flip}>
                 Flip
               </Button>
             </Buttons>
