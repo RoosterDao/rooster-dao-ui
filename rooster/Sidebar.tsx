@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 import { NetworkAndUser } from '../src/ui/components/sidebar/NetworkAndUser';
-import { SwitchVerticalIcon, PhotographIcon } from '@heroicons/react/outline';
+import { SwitchVerticalIcon, PhotographIcon, DocumentReportIcon } from '@heroicons/react/outline';
 import { NavLink } from '../src/ui/components/sidebar/NavLink';
 
 // Copyright 2022 @paritytech/contracts-ui authors & contributors
@@ -16,6 +16,9 @@ function Navigation() {
       </NavLink>
       <NavLink icon={PhotographIcon} to={`/test-erc721`} end>
         Erc 721
+      </NavLink>
+      <NavLink icon={DocumentReportIcon} to={`/test-governor`} end>
+        Governor
       </NavLink>
     </div>
   );

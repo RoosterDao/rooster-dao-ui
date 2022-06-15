@@ -8,6 +8,7 @@ import App from './App';
 import '../src/ui/styles/main.css';
 import '@polkadot/api-augment';
 import { Flipper } from './components/Flipper';
+import { Governor } from './components/Governor';
 
 globalThis.Buffer = Buffer;
 
@@ -23,6 +24,7 @@ root.render(
       <Route path="/" element={<App />}>
         <Route path="test-flipper" element={<Flipper/>} />
         <Route path="test-erc721" element={<div>Test 2</div>} />
+        <Route path="test-governor" element={<Governor/>} />
       </Route>
     </Routes>
   </HashRouter>
