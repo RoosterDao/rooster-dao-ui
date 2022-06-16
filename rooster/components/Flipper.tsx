@@ -15,7 +15,7 @@ import { useLocalStorage, useAccountId, useWeight, useContract } from '../../src
 // utils
 import { getContractInfo, toBalance } from '../../src/api';
 import { Abi, ContractPromise as Contract } from '../../src/types';
-import abi from '../../contracts/flipper/metadata.json';
+import abi from '../../contracts/examples/flipper/metadata.json';
 
 export function Flipper() {
   const [savedAddress, saveAddress] = useLocalStorage<string>('flipper_address', '');
@@ -60,12 +60,16 @@ export function Flipper() {
   useEffect(() => {
     if (isOnChain) {
       saveAddress(address);
-      new Contract(api, new Abi(abi), address).query.get(address, {}).then(result => setFlipState(result.output?.isTrue));
+      new Contract(api, new Abi(abi), address).query
+        .get(address, {})
+        .then(result => setFlipState(result.output?.isTrue));
     }
   }, [isOnChain]);
 
   useEffect(() => {
-    new Contract(api, new Abi(abi), address).query.get(address, {}).then(result => setFlipState(result.output?.isTrue));
+    new Contract(api, new Abi(abi), address).query
+      .get(address, {})
+      .then(result => setFlipState(result.output?.isTrue));
   }, [flipEvents]);
 
   useEffect(() => {

@@ -2,16 +2,20 @@
 
 Based on tech stack used in https://github.com/paritytech/contracts-ui
 
+## Run Flipper
+
 1. Clone this repository
 2. Checkout branch "rooster-dao-ui-prototype"
 3. Run `yarn install`
 4. Run `yarn start`
 5. Open `localhost:<port>` as shown in terminal
-6. Upload the `.contract` files from the `contracts` folder to your local node with https://paritytech.github.io/contracts-ui
+6. Upload the `flipper.contract` files from the `contracts/examples` folder to your local node with https://paritytech.github.io/contracts-ui
 7. Copy the smart contract addresses to the RoosterDAO UI prototype
 
 
-Original ReadMe:
+
+
+# Original ReadMe
 
 
 # Substrate Contracts UI
