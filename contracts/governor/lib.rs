@@ -67,7 +67,16 @@ mod governor {
 
         #[ink::test]
         fn default_works() {
-            // Test Your Contract
+            let governor = Governor::new();
+            assert_eq!(governor.get_own_proposal().proposal, "");
+        }
+
+        #[ink::test]
+        fn proposal_works() {
+            let mut governor = Governor::new();
+            let prop_msg = "hello world!";
+            governor.propose(prop_msg.to_string());
+            assert_eq!(governor.get_own_proposal().proposal,prop_msg)
         }
     }
 }
