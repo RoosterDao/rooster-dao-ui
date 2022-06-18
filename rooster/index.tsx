@@ -22,9 +22,9 @@ root.render(
   <HashRouter>
     <Routes>
       <Route path="/" element={<App />}>
-        <Route path="test-flipper" element={<Flipper/>} />
+        <Route path="test-governor" element={<Governor />} />
+        <Route path="test-flipper" element={<Flipper />} />
         <Route path="test-erc721" element={<div>Test 2</div>} />
-        <Route path="test-governor" element={<Governor/>} />
       </Route>
     </Routes>
   </HashRouter>

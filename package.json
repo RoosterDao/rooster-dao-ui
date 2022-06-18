@@ -14,7 +14,10 @@
     "test": "yarn cypress run",
     "deep-clean": "yarn clean && rm -rf node_modules",
     "regenerate": "yarn deep-clean && yarn && yarn start",
-    "postinstall": "husky install"
+    "postinstall": "husky install",
+    "contract-build": "cd ./contracts/governor/ && cargo +nightly contract build",
+    "contract-deploy": "cd ./contracts/governor/ && cargo contract instantiate --constructor new --args false --suri //Alice --gas 100000000000 --salt 0x$(openssl rand -hex 16)",
+    "contract": "yarn contract-build && yarn contract-deploy"
   },
   "keywords": [],
   "author": "",

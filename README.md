@@ -10,10 +10,18 @@ Based on tech stack used in https://github.com/paritytech/contracts-ui
 4. Run `yarn start`
 5. Open `localhost:<port>` as shown in terminal
 6. Upload the `flipper.contract` files from the `contracts/examples` folder to your local node with https://paritytech.github.io/contracts-ui
-7. Copy the smart contract addresses to the RoosterDAO UI prototype
+7. Select the Flipper page
+8. Copy the smart contract addresses to the designated input field
 
-
-
+## Run Governor
+1. Clone this repository
+2. Checkout branch "rooster-dao-ui-prototype"
+3. Run `yarn install`
+4. Run `yarn start` 
+5. Open `localhost:<port>` as shown in terminal
+6. Open Governor page
+7. Run `yarn contract` to build and deploy Governor Contract. Use `yarn contract-build` and `yarn contract-deploy` for separate steps.
+8. After deploy Governor page should show current block, address of smart contract and available messages
 
 # Original ReadMe
 
