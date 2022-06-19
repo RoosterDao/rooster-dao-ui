@@ -1,5 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+
 use ink_lang as ink;
 
 #[ink::contract]
@@ -11,6 +12,12 @@ mod governor {
         Mapping,
     };
 
+    use scale::{
+        Decode,
+        Encode,
+    };
+
+
     #[derive(Default, Debug, scale::Encode, scale::Decode, SpreadLayout, PackedLayout)]
     #[cfg_attr(feature = "std", derive(scale_info::TypeInfo, StorageLayout))]
     // proposal: String just for test purposes added
@@ -19,6 +26,15 @@ mod governor {
         executed: bool,
         canceled: bool,
     }
+
+    #[derive(Encode, Decode, Debug, PartialEq, Eq, Copy, Clone)]
+    #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+    pub enum MockError {
+        NotOwner,
+        NotApproved,
+        NotAllowed,
+    }
+
 
     /// Defines the storage of your contract.
     /// Add new fields to the below struct in order
@@ -59,6 +75,7 @@ mod governor {
             self.proposals.get(&caller).unwrap_or_default()
         }
 
+        /// Governor read functions
         #[ink(message)]
         pub fn get_votes(&self, account: AccountId, blocknumber: BlockNumber) -> u32 {
             ink_env::debug_println!("getVotes: account={:?} blocknumber={:?}", account, blocknumber);
@@ -111,6 +128,25 @@ mod governor {
         pub fn voting_period(&self) -> u32 {
             ink_env::debug_println!("voting_period");
             0
+        }
+
+        /// Governor write functions
+        #[ink(message)]
+        pub fn cast_vote(&self, proposal_id: u128) -> Result<(),MockError> {
+            ink_env::debug_println!("cast_vote: proposal_id={}", proposal_id);
+            Ok(())
+        }
+
+        #[ink(message)]
+        pub fn execute(&self, proposal_id: u128) -> Result<(), MockError> {
+            ink_env::debug_println!("execute: proposal_id={}", proposal_id);
+            Ok(())
+        }
+
+        #[ink(message)]
+        pub fn new_propose(&self, proposal_id: u128) -> Result<(), MockError> {
+            ink_env::debug_println!("propose: proposal_id={}", proposal_id);
+            Ok(())
         }
 
 
@@ -192,6 +228,24 @@ mod governor {
         fn voting_period_works() {
             let governor = Governor::new();
             assert_eq!(governor.voting_period(),0);
+        }
+
+        #[ink::test]
+        fn cast_vote_works() {
+            let governor = Governor::new();
+            assert!(governor.cast_vote(0).is_ok())
+        }
+
+        #[ink::test]
+        fn execute_works() {
+            let governor = Governor::new();
+            assert!(governor.execute(0).is_ok())
+        }
+
+        #[ink::test]
+        fn new_propose_works() {
+            let governor = Governor::new();
+            assert!(governor.new_propose(0).is_ok())
         }
 
 
