@@ -6,7 +6,10 @@ use ink_lang as ink;
 #[ink::contract]
 mod governor {
 
-    use ink_prelude::string::String;
+    use ink_prelude::string::{
+        String,
+        ToString,
+    };
     use ink_storage::{
         traits::{PackedLayout, SpreadAllocate, SpreadLayout, StorageLayout},
         Mapping,
