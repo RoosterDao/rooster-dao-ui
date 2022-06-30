@@ -7,8 +7,10 @@ import { HashRouter, Route, Routes } from 'react-router-dom';
 import App from './App';
 import '../src/ui/styles/main.css';
 import '@polkadot/api-augment';
-import { Flipper } from './components/Flipper';
-import { Governor } from './components/Governor';
+import { Add } from './components/Add';
+import { Explore } from './components/Explore';
+import { Home } from './components/Home';
+import { Settings } from './components/Settings';
 
 globalThis.Buffer = Buffer;
 
@@ -22,9 +24,10 @@ root.render(
   <HashRouter>
     <Routes>
       <Route path="/" element={<App />}>
-        <Route path="test-governor" element={<Governor />} />
-        <Route path="test-flipper" element={<Flipper />} />
-        <Route path="test-erc721" element={<div>Test 2</div>} />
+        <Route index element={<Home />} />
+        <Route path="explore" element={<Explore />} />
+        <Route path="add" element={<Add />} />
+        <Route path="settings" element={<Settings />} />
       </Route>
     </Routes>
   </HashRouter>
