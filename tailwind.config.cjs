@@ -4,7 +4,7 @@ const process = require('process');
 module.exports = {
   mode: 'jit',
   darkMode: 'class',
-  content: ['./src/**/*.{js,ts,jsx,tsx}'],
+  content: ['./src/**/*.{js,ts,jsx,tsx}', './rooster/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
