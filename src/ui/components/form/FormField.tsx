@@ -16,6 +16,7 @@ type ValidationState = 'error' | 'success' | 'warning' | null;
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
   label?: React.ReactNode;
   help?: React.ReactNode;
+  labelClass?: string;
 }
 
 export function getValidation({
@@ -31,6 +32,7 @@ export function getValidation({
 export function FormField({
   children,
   className,
+  labelClass,
   help,
   id,
   isError,
@@ -52,7 +54,7 @@ export function FormField({
   return (
     <div className={classes('form-field', className)}>
       {label && (
-        <label data-tip={help} htmlFor={id}>
+        <label className={labelClass} data-tip={help} htmlFor={id}>
           {label}
           {help && (
             <>
