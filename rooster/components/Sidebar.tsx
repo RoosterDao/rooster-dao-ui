@@ -1,14 +1,10 @@
 // Copyright 2022 @paritytech/contracts-ui authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
-import { NetworkAndUser } from '../src/ui/components/sidebar/NetworkAndUser';
-import { SwitchVerticalIcon, PlusCircleIcon, SearchCircleIcon } from '@heroicons/react/outline';
-import { NavLink } from '../src/ui/components/sidebar/NavLink';
-import { ChatAltIcon, CogIcon } from '@heroicons/react/outline';
+import { NetworkAndUser } from '../../src/ui/components/sidebar/NetworkAndUser';
+import { CogIcon, PlusCircleIcon, SearchCircleIcon } from '@heroicons/react/outline';
+import { NavLink } from '../../src/ui/components/sidebar/NavLink';
 import { Link } from 'react-router-dom';
-
-// Copyright 2022 @paritytech/contracts-ui authors & contributors
-// SPDX-License-Identifier: GPL-3.0-only
 
 function Navigation() {
   return (
