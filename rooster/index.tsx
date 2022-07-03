@@ -7,10 +7,13 @@ import { HashRouter, Route, Routes } from 'react-router-dom';
 import App from './App';
 import '../src/ui/styles/main.css';
 import '@polkadot/api-augment';
-import { Add } from './components/Add';
+import { AddDao } from './components/AddDao';
 import { Explore } from './components/Explore';
 import { Home } from './components/Home';
+import { ViewDao } from './components/ViewDao';
 import { Settings } from './components/Settings';
+import { AddProposal } from './components/AddProposal';
+import { ViewProposal } from './components/ViewProposal';
 
 globalThis.Buffer = Buffer;
 
@@ -26,8 +29,11 @@ root.render(
       <Route path="/" element={<App />}>
         <Route index element={<Home />} />
         <Route path="explore" element={<Explore />} />
-        <Route path="add" element={<Add />} />
+        <Route path="add" element={<AddDao />} />
         <Route path="settings" element={<Settings />} />
+        <Route path="/dao/:address/" element={<ViewDao />} />
+        <Route path="/dao/:address/proposal/new" element={<AddProposal />} />
+        <Route path="/dao/:address/proposal/:proposal/" element={<ViewProposal />} />
       </Route>
     </Routes>
   </HashRouter>

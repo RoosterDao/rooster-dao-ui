@@ -12,6 +12,9 @@ import { useApi } from '../../src/ui/contexts';
 import { useAccountId, useFormField } from '../../src/ui/hooks';
 import { useState } from 'react';
 import BN from 'bn.js';
+import { useNavigate } from 'react-router';
+import { TransactionOptions } from './TransactionOptions';
+import { useDaos } from '../lib/hooks';
 
 const templateOptions = [
   { label: 'Rooster DAO', value: 'rooster' },
@@ -61,8 +64,9 @@ const resolveUnit = (value: BNType, unit) => {
   return resolvedValue.mul(new BN(4));
 };
 
-export function Add() {
+export function AddDao() {
   const [template, setTemplate] = useState(templateOptions[0].value);
+  const { addDao } = useDaos();
   const [codeHash, setCodeHash] = useState('');
   const [votingDelay, setVotingDelay] = useState(new BN(0));
   const [unitVotingDelay, setUnitVotingDelay] = useState(units.hours);
@@ -70,8 +74,14 @@ export function Add() {
   const [unitPeriod, setUnitPeriod] = useState(units.days);
   const [executionDelay, setExecutionDelay] = useState(new BN(0));
   const [unitExecution, setUnitExecution] = useState(units.hours);
+  const [options, setOptions] = useState({
+    gasLimit: null,
+    storageDepositLimit: null,
+    value: null,
+  });
 
   const { api, keyring } = useApi();
+  const navigate = useNavigate();
   const { value: accountId, onChange: setAccountId, ...accountIdValidation } = useAccountId();
 
   const daoName = useFormField<string>('My Rooster DAO', value => {
@@ -81,21 +91,24 @@ export function Add() {
     return { isValid: false, isError: true, message: 'Please define a DAO name.' };
   });
 
-  const createDAO = () => {
+  const createDAO = async () => {
     if (daoName === '') return;
     const args = {
-      name: daoName,
+      name: daoName.value,
       votingDelay: resolveUnit(votingDelay, unitVotingDelay),
       votingPeriod: resolveUnit(votingPeriod, unitPeriod),
       executionDelay: resolveUnit(executionDelay, unitExecution),
     };
-    instantiateDAO({
+    const contract = await instantiateDAO({
       api,
-      keyring,
+      accountOrPair: keyring.getPair(accountId),
       accountId,
       codeHash: template === 'rooster' ? governorCodeHash : codeHash,
       args,
+      options,
     });
+    addDao(contract);
+    navigate(`/dao/${contract.address}`);
   };
 
   return (
@@ -221,8 +234,7 @@ export function Add() {
                   value={unitExecution}
                 />
               </FormField>
-              <FormField></FormField>
-              <FormField></FormField>
+              <TransactionOptions setOptions={setOptions}></TransactionOptions>
               <Buttons>
                 <Button variant="primary" isDisabled={false} onClick={createDAO}>
                   Create DAO

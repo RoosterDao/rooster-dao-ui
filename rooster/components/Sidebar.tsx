@@ -2,9 +2,15 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 import { NetworkAndUser } from '../../src/ui/components/sidebar/NetworkAndUser';
-import { CogIcon, PlusCircleIcon, SearchCircleIcon } from '@heroicons/react/outline';
+import {
+  CogIcon,
+  PlusCircleIcon,
+  SearchCircleIcon,
+  DotsCircleHorizontalIcon
+} from '@heroicons/react/outline';
 import { NavLink } from '../../src/ui/components/sidebar/NavLink';
 import { Link } from 'react-router-dom';
+import { useDaos } from '../lib/hooks';
 
 function Navigation() {
   return (
@@ -20,10 +26,18 @@ function Navigation() {
 }
 
 function QuickLinks() {
+  const { daosList } = useDaos();
   return (
     <div className="quick-links">
       <div className="section your-contracts">
-        <div className="header">Your DAO's</div>
+        {daosList.length > 0 && <div className="header">Your DAO's</div>}
+        {daosList.map((dao: any) => {
+          return (
+            <NavLink icon={DotsCircleHorizontalIcon} key={dao.address} to={`/dao/${dao.address}`}>
+              {dao.name}
+            </NavLink>
+          );
+        })}
       </div>
     </div>
   );
