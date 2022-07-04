@@ -3,12 +3,12 @@
 
 import { Link } from 'react-router-dom';
 import { AccountSelect } from '../../src/ui/components/account';
-import { useEffect, useState } from 'react';
-import { useAccountId } from '../../src/ui/hooks';
+import { useState } from 'react';
+import { useGlobalAccountId } from '../lib/hooks';
 
 export function Page({ children }): React.ReactElement {
   const [isOnChain, setIsOnChain] = useState(true);
-  const { value: accountId, onChange: setAccountId, ...accountIdValidation } = useAccountId();
+  const { value: accountId, onChange: setAccountId, ...accountIdValidation } = useGlobalAccountId();
   return (
     <>
       <div className="w-full mx-auto overflow-y-auto">
@@ -22,12 +22,15 @@ export function Page({ children }): React.ReactElement {
                   className="mb-2"
                   value={accountId}
                   onChange={setAccountId}
+                  {...accountIdValidation}
                 />
               </div>
               <h1 className="text-2xl font-semibold dark:text-white text-gray-700 capitalize">
                 <Link to="/">Rooster DAO</Link>
               </h1>
-              <div className="dark:text-gray-400 text-gray-500 text-sm">-- Short description here --</div>
+              <div className="dark:text-gray-400 text-gray-500 text-sm">
+                -- Short description here --
+              </div>
             </div>
             <div className="flex flex-col py-4 h-full">
               <div className="-my-2 h-full overflow-x-auto sm:-mx-6 lg:-mx-8">

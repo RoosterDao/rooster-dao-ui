@@ -6,10 +6,9 @@ import { Form, FormField } from '../../src/ui/components/form';
 import { propose } from '../lib/api';
 import { Page } from './Page';
 import { useApi } from '../../src/ui/contexts';
-import { useAccountId } from '../../src/ui/hooks';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { useDaos, useProposals } from '../lib/hooks';
+import { useDaos, useGlobalAccountId, useProposals } from '../lib/hooks';
 import { TransactionOptions } from './TransactionOptions';
 import { Link } from 'react-router-dom';
 
@@ -26,7 +25,7 @@ export function AddProposal() {
 
   const { api, keyring } = useApi();
   const navigate = useNavigate();
-  const { value: accountId } = useAccountId();
+  const { value: accountId } = useGlobalAccountId();
   const { getDao } = useDaos();
   const dao = getDao(address);
   const { addProposal } = useProposals();

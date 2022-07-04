@@ -52,7 +52,7 @@ export function ViewDao() {
       >
         <div className="flex items-center text-base dark:text-gray-300 text-gray-500 space-x-2">
           <PlusSmIcon className="h-8 w-8 dark:text-gray-500 text-gray-400 group-hover:text-gray-500" />
-          <span>Create new Proposal</span>
+          <span>Create new proposal</span>
         </div>
       </Link>
 

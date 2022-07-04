@@ -1,8 +1,8 @@
 // rooster dao
 
-import { useEffect } from 'react';
-import { useLocalStorage } from '../../src/ui/hooks';
-import { BehaviorSubject } from 'rxjs';
+import { useEffect, useLayoutEffect } from 'react';
+import { useAccountId, useLocalStorage } from '../../src/ui/hooks';
+import { BehaviorSubject, Subject } from 'rxjs';
 
 const DAO_LOCAL_STORAGE = 'rooster_dao_daos';
 const PROPOSAL_LOCAL_STORAGE = 'rooster_dao_proposals';
@@ -34,6 +34,8 @@ const proposalsSubject = new BehaviorSubject(
   >
 );
 
+const accountSubject = new Subject();
+
 export function useProposals() {
   const [proposals, setProposals] = useLocalStorage<Record<string, proposal[]>>(
     PROPOSAL_LOCAL_STORAGE,
@@ -52,15 +54,32 @@ export function useProposals() {
     return getProposalsForDao(dao).find(x => x.id === proposalId) ?? null;
   };
 
+  const forgetProposalsForDao = dao => {
+    delete proposals[dao];
+    proposalsSubject.next({ ...proposals });
+  };
+
+  const forgetAllProposals = () => {
+    proposalsSubject.next({});
+  };
+
   useEffect(() => {
     proposalsSubject.subscribe(p => setProposals(p));
   }, []);
 
-  return { proposals, addProposal, getProposal, getProposalsForDao };
+  return {
+    proposals,
+    addProposal,
+    getProposal,
+    getProposalsForDao,
+    forgetProposalsForDao,
+    forgetAllProposals,
+  };
 }
 
 export function useDaos() {
   const [daosList, setDaosList] = useLocalStorage<dao[]>(DAO_LOCAL_STORAGE, [] as dao[]);
+  const { forgetProposalsForDao, forgetAllProposals } = useProposals();
 
   const addDao = (dao: dao) => {
     daosSubject.next([...daosList, dao]);
@@ -72,13 +91,29 @@ export function useDaos() {
 
   const forgetDao = (dao: dao | null) => {
     dao && daosSubject.next(daosList.filter(x => x.address !== dao.address));
+    dao && forgetProposalsForDao(dao.address);
   };
 
-  const forgetAllDaos = () => daosSubject.next([]);
+  const forgetAllDaos = () => {
+    daosSubject.next([]);
+    forgetAllProposals();
+  };
 
   useEffect(() => {
     daosSubject.subscribe(daos => setDaosList(daos));
   }, []);
 
   return { daosList, addDao, getDao, forgetDao, forgetAllDaos };
+}
+
+export function useGlobalAccountId() {
+  const { value, onChange: setAccountId, ...accountIdValidation } = useAccountId();
+
+  const onChange = acc => accountSubject.next(acc);
+
+  useLayoutEffect(() => {
+    accountSubject.subscribe(account => setAccountId(account));
+  }, []);
+
+  return { value, onChange, ...accountIdValidation };
 }

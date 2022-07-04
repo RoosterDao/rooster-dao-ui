@@ -92,7 +92,6 @@ export function AddDao() {
   });
 
   const createDAO = async () => {
-    if (daoName === '') return;
     const args = {
       name: daoName.value,
       votingDelay: resolveUnit(votingDelay, unitVotingDelay),
@@ -236,7 +235,7 @@ export function AddDao() {
               </FormField>
               <TransactionOptions setOptions={setOptions}></TransactionOptions>
               <Buttons>
-                <Button variant="primary" isDisabled={false} onClick={createDAO}>
+                <Button variant="primary" isDisabled={daoName.value === ''} onClick={createDAO}>
                   Create DAO
                 </Button>
               </Buttons>

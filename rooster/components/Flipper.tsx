@@ -10,16 +10,17 @@ import { Button, Buttons } from '../../src/ui/components/common';
 // Hooks
 import { useEffect, useState } from 'react';
 import { useApi } from '../../src/ui/contexts';
-import { useLocalStorage, useAccountId, useWeight, useContract } from '../../src/ui/hooks';
+import { useLocalStorage, useWeight, useContract } from '../../src/ui/hooks';
 
 // utils
 import { getContractInfo, toBalance } from '../../src/api';
 import { Abi, ContractPromise as Contract } from '../../src/types';
 import abi from '../../contracts/examples/flipper/metadata.json';
+import { useGlobalAccountId } from '../lib/hooks';
 
 export function Flipper() {
   const [savedAddress, saveAddress] = useLocalStorage<string>('flipper_address', '');
-  const { value: accountId, onChange: setAccountId, ...accountIdValidation } = useAccountId();
+  const { value: accountId, onChange: setAccountId, ...accountIdValidation } = useGlobalAccountId();
 
   const [address, setAddress] = useState(savedAddress);
   const [isOnChain, setIsOnChain] = useState(true);
