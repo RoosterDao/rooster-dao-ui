@@ -10,6 +10,9 @@ const PROPOSAL_LOCAL_STORAGE = 'rooster_dao_proposals';
 interface dao {
   address: string;
   name: string;
+  votingDelay: number;
+  votingPeriod: number;
+  executionDelay: number;
   abi: Record<string, unknown>;
 }
 

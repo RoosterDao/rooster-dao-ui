@@ -66,6 +66,9 @@ export const instantiateDAO = ({
         resolve({
           address: address === 'string' ? address : address.toHuman(),
           name: args.name,
+          votingDelay: args.votingDelay.toNumber(),
+          votingPeriod: args.votingPeriod.toNumber(),
+          executionDelay: args.executionDelay.toNumber(),
           abi,
         });
       }
