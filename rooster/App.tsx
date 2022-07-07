@@ -10,6 +10,7 @@ import {
   TransactionsContextProvider,
   ThemeContextProvider,
 } from '../src/ui/contexts';
+import { IndexerContextProvider } from './components/HackedIndexerContext';
 
 const App = (): JSX.Element => {
   return (
@@ -17,12 +18,14 @@ const App = (): JSX.Element => {
       <ApiContextProvider>
         <DatabaseContextProvider>
           <TransactionsContextProvider>
-            <div className="relative md:fixed flex min-h-screen inset-0 overflow-hidden dark:bg-gray-900 dark:text-white text-black">
-              <Sidebar />
-              <AwaitApis>
-                <Outlet />
-              </AwaitApis>
-            </div>
+            <IndexerContextProvider>
+              <div className="relative md:fixed flex min-h-screen inset-0 overflow-hidden dark:bg-gray-900 dark:text-white text-black">
+                <Sidebar />
+                <AwaitApis>
+                  <Outlet />
+                </AwaitApis>
+              </div>
+            </IndexerContextProvider>
           </TransactionsContextProvider>
         </DatabaseContextProvider>
       </ApiContextProvider>
