@@ -1,22 +1,43 @@
-import { Disclosure } from '@headlessui/react';
+import { PencilAltIcon, ExclamationCircleIcon } from '@heroicons/react/outline';
+import { useState } from 'react';
 import { useParams } from 'react-router';
 import { CopyButton } from '../../src/ui/components/common/CopyButton';
 import { useApi } from '../../src/ui/contexts';
 import { truncate } from '../../src/ui/util';
-import { useDaos, useProposals } from '../lib/hooks';
+import { useCastVote, useHasVoted } from '../lib/api';
+import { useDaos, useGlobalAccountId, useProposals } from '../lib/hooks';
+import { useHackedIndexer } from './HackedIndexerContext';
 
 import { Page } from './Page';
 import { Timeline, Step } from './ProposalTimeLine';
+import { VoteType, VotingModal } from './VotingModal';
 
 export function ViewProposal() {
   const { address, proposal: proposalId } = useParams();
-  const { api, keyring } = useApi();
   if (!address || !proposalId) throw new Error('No address in url');
+
+  const [hasVoted, setHasVoted] = useState(false as Boolean | null);
+  const [isOpen, setIsOpen] = useState(false);
+  const { keyring } = useApi();
+  const { value: accountId } = useGlobalAccountId();
   const { getDao } = useDaos();
   const dao = getDao(address);
   const { getProposal } = useProposals();
   const proposal = getProposal(address, proposalId);
 
+  const { txCastVote } = useCastVote(address);
+
+  const { queryHasVoted } = useHasVoted(address);
+  queryHasVoted(proposalId).then(setHasVoted);
+
+  const { getVotes } = useHackedIndexer();
+  const votes = getVotes(address, accountId);
+  const canVote = votes !== '0';
+
+  const castVote = async (vote: VoteType) => {
+    await txCastVote(proposalId, vote);
+    queryHasVoted(proposalId).then(setHasVoted);
+  };
 
   // derive dates
   const steps = [] as Step[];
@@ -84,7 +105,7 @@ export function ViewProposal() {
             <div className="mt-4">
               <div className="inline mr-3">Proposed by:</div>
               <div className="inline mr-4">
-                <strong>{accountOrPair.meta.name}</strong>
+                <strong>{keyring.getPair(accountId).meta.name}</strong>
               </div>
               <div className="inline mt-4 dark:text-gray-400 text-gray-500 text-sm">
                 <div className="inline-flex items-center">
@@ -95,6 +116,26 @@ export function ViewProposal() {
                 </div>
               </div>
             </div>
+            {!hasVoted && canVote ? (
+              <a
+                onClick={() => setIsOpen(true)}
+                className="inline-flex mt-4 w-max justify-between items-center px-6 py-4 border text-gray-500 dark:border-gray-700 border-gray-200 rounded-md dark:bg-elevation-1 dark:hover:bg-elevation-2 hover:bg-gray-100 cursor-pointer"
+              >
+                <div className="flex items-center text-base dark:text-gray-300 text-gray-500 space-x-2">
+                  <PencilAltIcon className="h-8 w-8 dark:text-gray-500 text-gray-400 group-hover:text-gray-500" />
+                  <span>Vote</span>
+                </div>
+              </a>
+            ) : (
+              <div className="mt-6 flex items-center text-base dark:text-gray-300 text-gray-500 space-x-2">
+                <ExclamationCircleIcon className="h-8 w-8 dark:text-gray-500 text-gray-400 group-hover:text-gray-500" />
+                <span>
+                  {hasVoted
+                    ? 'You have already voted on this proposal!'
+                    : "You don't have enough voting power to vote on this proposal."}
+                </span>
+              </div>
+            )}
             <div className="mt-6">
               <div>Description:</div>
               <div className="mt-4 collapsible-panel">
@@ -112,6 +153,7 @@ export function ViewProposal() {
           </div>
         </div>
       </div>
+      {isOpen && <VotingModal setIsOpen={setIsOpen} isOpen={isOpen} castVote={castVote} />}
     </Page>
   );
 }

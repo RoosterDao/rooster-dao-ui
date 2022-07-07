@@ -1,6 +1,6 @@
 // rooster dao
 
-import { useEffect, useLayoutEffect } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { useAccountId, useLocalStorage } from '../../src/ui/hooks';
 import { BehaviorSubject, Subject } from 'rxjs';
 
@@ -37,7 +37,7 @@ const proposalsSubject = new BehaviorSubject(
   >
 );
 
-const accountSubject = new Subject();
+const accountSubject = new BehaviorSubject('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY');
 
 export function useProposals() {
   const [proposals, setProposals] = useLocalStorage<Record<string, proposal[]>>(
@@ -109,14 +109,16 @@ export function useDaos() {
   return { daosList, addDao, getDao, forgetDao, forgetAllDaos };
 }
 
-export function useGlobalAccountId() {
+export const useGlobalAccountId = () => {
   const { value, onChange: setAccountId, ...accountIdValidation } = useAccountId();
 
-  const onChange = acc => accountSubject.next(acc);
+  const onChange = acc => {
+    accountSubject.next(acc);
+  };
 
   useLayoutEffect(() => {
     accountSubject.subscribe(account => setAccountId(account));
   }, []);
 
   return { value, onChange, ...accountIdValidation };
-}
+};

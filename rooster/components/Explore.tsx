@@ -8,6 +8,7 @@ import { useDaos } from '../lib/hooks';
 import { ErrorBoundary } from './ErrorBoundary';
 import { Link } from 'react-router-dom';
 import { TrashIcon } from '@heroicons/react/outline';
+import { useLayoutEffect, useEffect } from 'react';
 
 export function Explore() {
   const { daosList, forgetAllDaos } = useDaos();

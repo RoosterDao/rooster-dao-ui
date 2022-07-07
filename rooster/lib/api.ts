@@ -10,9 +10,12 @@ import {
   prepareContractTx,
   transformUserInput,
 } from '../../src/api';
-import abi from '../lib/metadata.json';
+import abiJSON from '../lib/metadata.json';
 import { keyring } from '@polkadot/ui-keyring';
+import { useApi } from '../../src/ui/contexts';
+import { useGlobalAccountId } from './hooks';
 
+const abi = new Abi(abiJSON);
 const defaultGasLimit = new BN('100000000000'); //TODO: check best way to determine gas limit
 
 interface options {
@@ -46,7 +49,7 @@ export const instantiateDAO = ({
   new Promise<any>((resolve, reject) => {
     const params = {
       codeHash,
-      metadata: new Abi(abi),
+      metadata: abi,
       origin: accountId,
       weight: options.gasLimit || defaultGasLimit,
       storageDepositLimit: options.storageDepositLimit,
@@ -96,9 +99,8 @@ export const propose = ({
       },
       description,
     };
-    const metadata = new Abi(abi);
-    const message = metadata.findMessage('propose');
-    const contract = new Contract(api, metadata, address);
+    const message = abi.findMessage('propose');
+    const contract = new Contract(api, abi, address);
     const transformed = transformUserInput(contract.registry, message.args, argValues);
     if (!options.gasLimit) {
       options.gasLimit = defaultGasLimit;
@@ -110,7 +112,7 @@ export const propose = ({
         const { event } = record;
         if (api.events.contracts.ContractEmitted.is(event)) {
           const [account_id, contract_evt] = event.data;
-          const decoded = new Abi(abi).decodeEvent(contract_evt);
+          const decoded = abi.decodeEvent(contract_evt);
           if (decoded.event.identifier === 'ProposalCreated') {
             resolve({
               id: decoded.args[0].toHuman(),
@@ -124,3 +126,69 @@ export const propose = ({
       });
     });
   });
+
+export function useDelegate(dao) {
+  const { api, keyring } = useApi();
+  const { value: caller } = useGlobalAccountId();
+
+  const delegate = (accountId, options) => {
+    const message = abi.findMessage('delegate');
+    const contract = new Contract(api, abi, dao);
+    const transformed = transformUserInput(contract.registry, message.args, {
+      delegatee: accountId,
+    });
+    if (!options.gasLimit) {
+      options.gasLimit = defaultGasLimit;
+    }
+    const tx = prepareContractTx(contract.tx['delegate'], options, transformed);
+    tx.signAndSend(keyring.getPair(caller), { signer: undefined }, async result => {
+      // reactions to this transaction should be handled by event listener
+    });
+  };
+
+  return { delegate };
+}
+
+export function useCastVote(dao) {
+  const { api, keyring } = useApi();
+  const { value: caller } = useGlobalAccountId();
+
+  const txCastVote = (proposalId, vote, options = {}) =>
+    new Promise<any>((resolve, reject) => {
+      const message = abi.findMessage('castVote');
+      const contract = new Contract(api, abi, dao);
+      const transformed = transformUserInput(contract.registry, message.args, {
+        proposalId,
+        vote,
+      });
+      if (!options.gasLimit) {
+        options.gasLimit = defaultGasLimit;
+      }
+      const tx = prepareContractTx(contract.tx['castVote'], options, transformed);
+      tx.signAndSend(keyring.getPair(caller), { signer: undefined }, async result => {
+        await result;
+        if (result.events.length > 0) {
+          resolve(true);
+        }
+      });
+    });
+
+  return { txCastVote };
+}
+
+export function useHasVoted(dao) {
+  const { api, keyring } = useApi();
+  const { value: caller } = useGlobalAccountId();
+
+  const queryHasVoted = async (proposalId, accountId = caller): Promise<Boolean | null> => {
+    const contract = new Contract(api, abi, dao);
+    const result = await contract.query.hasVoted(accountId, {}, proposalId, accountId);
+    if (result.result.isOk) {
+      return result.output?.toHuman() as Boolean | null;
+    } else {
+      return null;
+    }
+  };
+
+  return { queryHasVoted };
+}

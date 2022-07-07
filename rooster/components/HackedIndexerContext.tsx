@@ -54,14 +54,17 @@ export const IndexerContextProvider = ({ children }: React.PropsWithChildren<Par
       const { event } = record;
       if (api.events.contracts.ContractEmitted.is(event)) {
         const [account_id, contract_evt] = event.data;
-        const decoded = metadata.decodeEvent(contract_evt);
-        if (decoded) {
-          return {
-            dao: account_id.toJSON(),
-            eventName: decoded.event.identifier,
-            args: decoded.args,
-          };
-        }
+        // is there a better way to check if event is from specific contract?
+        try {
+          const decoded = metadata.decodeEvent(contract_evt);
+          if (decoded) {
+            return {
+              dao: account_id.toJSON(),
+              eventName: decoded.event.identifier,
+              args: decoded.args,
+            };
+          }
+        } catch {}
       }
     });
     return mappedEvents.filter(x => x).reverse();
@@ -106,7 +109,7 @@ export const IndexerContextProvider = ({ children }: React.PropsWithChildren<Par
     }
   }, [api]);
 
-  const state = { getVotes, delegateVotes };
+  const state = { getVotes };
 
   return <IndexerContext.Provider value={state}>{children}</IndexerContext.Provider>;
 };
