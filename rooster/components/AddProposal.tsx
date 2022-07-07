@@ -46,13 +46,13 @@ export function AddProposal() {
   return (
     <ErrorBoundary>
       <Page>
-        <h3 className="inline pr-8 text-xl font-semibold dark:text-white text-gray-700">
+        <h2 className="inline pr-8 text-xl font-semibold dark:text-white text-gray-700">
           Create a new proposal for{' '}
           <Link className="dark:hover:text-gray-300 hover:text-gray-400" to={`/dao/${address}`}>
             {' '}
             {dao.name}
           </Link>
-        </h3>
+        </h2>
         <div className="mt-4 grid grid-cols-12 w-full">
           <div className="col-span-8 lg:col-span-8 2xl:col-span-8 rounded-lg w-full">
             <Form>

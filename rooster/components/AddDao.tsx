@@ -10,14 +10,15 @@ import { instantiateDAO } from '../lib/api';
 import { Page } from './Page';
 import { useApi } from '../../src/ui/contexts';
 import { useAccountId, useFormField } from '../../src/ui/hooks';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import BN from 'bn.js';
 import { useNavigate } from 'react-router';
 import { TransactionOptions } from './TransactionOptions';
 import { useDaos } from '../lib/hooks';
+import { checkOnChainCode } from '../../src/api';
 
 const templateOptions = [
-  { label: 'Rooster DAO', value: 'rooster' },
+  { label: 'Rooster Governor Contract', value: 'rooster' },
   { label: 'Custom', value: 'custom' },
 ];
 
@@ -74,6 +75,7 @@ export function AddDao() {
   const [unitPeriod, setUnitPeriod] = useState(units.days);
   const [executionDelay, setExecutionDelay] = useState(new BN(0));
   const [unitExecution, setUnitExecution] = useState(units.hours);
+  const [isOnChain, setIsOnChain] = useState(true);
   const [options, setOptions] = useState({
     gasLimit: null,
     storageDepositLimit: null,
@@ -90,6 +92,10 @@ export function AddDao() {
     }
     return { isValid: false, isError: true, message: 'Please define a DAO name.' };
   });
+
+  useEffect(() => {
+    checkOnChainCode(api, governorCodeHash).then(result => setIsOnChain(result));
+  }, [template]);
 
   const createDAO = async () => {
     const args = {
@@ -113,6 +119,9 @@ export function AddDao() {
   return (
     <ErrorBoundary>
       <Page>
+      <h3 className="mb-4 pr-8 text-xl font-semibold dark:text-white text-gray-700">
+        Add a DAO
+      </h3>
         <div className="grid grid-cols-12 w-full">
           <div className="col-span-8 lg:col-span-8 2xl:col-span-8 rounded-lg w-full">
             <Form>
@@ -121,8 +130,8 @@ export function AddDao() {
                 help=""
                 id="labelDAOTemplate"
                 label="Which DAO template do you want to use?"
-                isError={false}
-                message={''}
+                isError={template === templateOptions[0].value && !isOnChain}
+                message={'Rooster Governor Contract is not yet deployed on the chain.'}
               >
                 <Dropdown
                   onChange={x => setTemplate(x)}

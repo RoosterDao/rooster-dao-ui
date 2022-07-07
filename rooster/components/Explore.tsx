@@ -14,9 +14,9 @@ export function Explore() {
   return (
     <ErrorBoundary>
       <Page>
-        <h3 className="inline text-xl font-semibold dark:text-white text-gray-700">
+        <h2 className="inline text-xl font-semibold dark:text-white text-gray-700">
           Explore DAO's
-        </h3>
+        </h2>
         <Button
           className="float-right border-2 dark:border-gray-700 border-gray-200"
           onClick={forgetAllDaos}

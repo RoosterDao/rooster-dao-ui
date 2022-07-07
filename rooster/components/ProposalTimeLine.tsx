@@ -17,7 +17,7 @@ export function Timeline({ steps }: Props) {
       {steps.map(({ name, index, date }) => {
         const currentDate = Date.now();
         const isFilled = date <= currentDate;
-        const isCurrent = steps.filter(x => x.date > currentDate)?.[0].date === date;
+        const isCurrent = steps.filter(x => x.date > currentDate)?.[0]?.date === date;
 
         return (
           <div key={`${name}`}>

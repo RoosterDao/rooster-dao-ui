@@ -1,6 +1,6 @@
 {
   "source": {
-    "hash": "0xe1c8048be2acc79d78d5d202efdf41d323418aec1f60ff18ea6aeb9f3b599776",
+    "hash": "0x01323262101692d3d98556dee1f4d6360579345d1d08f6daf970f09987cade1a",
     "language": "ink! 3.3.0",
     "compiler": "rustc 1.63.0-nightly"
   },
@@ -22,7 +22,7 @@
                 "displayName": [
                   "Option"
                 ],
-                "type": 28
+                "type": 33
               }
             },
             {
@@ -93,7 +93,7 @@
                 "displayName": [
                   "Transaction"
                 ],
-                "type": 32
+                "type": 36
               }
             },
             {
@@ -165,19 +165,19 @@
                 "displayName": [
                   "VoteType"
                 ],
-                "type": 36
+                "type": 40
               }
             }
           ],
           "docs": [],
           "label": "VoteCast"
-        }
-      ],
-      "messages": [
+        },
         {
           "args": [
             {
-              "label": "account",
+              "docs": [],
+              "indexed": true,
+              "label": "delegator",
               "type": {
                 "displayName": [
                   "AccountId"
@@ -186,29 +186,61 @@
               }
             },
             {
-              "label": "blocknumber_o",
+              "docs": [],
+              "indexed": false,
+              "label": "from_delegatee",
               "type": {
                 "displayName": [
-                  "Option"
+                  "AccountId"
                 ],
-                "type": 29
+                "type": 6
+              }
+            },
+            {
+              "docs": [],
+              "indexed": false,
+              "label": "to_delegatee",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 6
               }
             }
           ],
-          "docs": [
-            " Governor read functions"
-          ],
-          "label": "get_votes",
-          "mutates": false,
-          "payable": false,
-          "returnType": {
-            "displayName": [
-              "u32"
-            ],
-            "type": 1
-          },
-          "selector": "0x5f9d374c"
+          "docs": [],
+          "label": "DelegateChanged"
         },
+        {
+          "args": [
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "delegatee",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 6
+              }
+            },
+            {
+              "docs": [],
+              "indexed": false,
+              "label": "votes",
+              "type": {
+                "displayName": [
+                  "u32"
+                ],
+                "type": 1
+              }
+            }
+          ],
+          "docs": [],
+          "label": "DelegateVotesChanged"
+        }
+      ],
+      "messages": [
         {
           "args": [
             {
@@ -230,7 +262,10 @@
               }
             }
           ],
-          "docs": [],
+          "docs": [
+            " Governor read functions",
+            ""
+          ],
           "label": "has_voted",
           "mutates": false,
           "payable": false,
@@ -252,7 +287,7 @@
             "displayName": [
               "Option"
             ],
-            "type": 28
+            "type": 33
           },
           "selector": "0x3adaf70d"
         },
@@ -322,7 +357,7 @@
           "payable": false,
           "returnType": {
             "displayName": [],
-            "type": 30
+            "type": 34
           },
           "selector": "0x4728f0e4"
         },
@@ -346,7 +381,7 @@
             "displayName": [
               "ProposalState"
             ],
-            "type": 31
+            "type": 35
           },
           "selector": "0x0ced162a"
         },
@@ -386,7 +421,7 @@
                 "displayName": [
                   "Transaction"
                 ],
-                "type": 32
+                "type": 36
               }
             },
             {
@@ -414,6 +449,65 @@
         {
           "args": [
             {
+              "label": "account",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 6
+              }
+            },
+            {
+              "label": "block",
+              "type": {
+                "displayName": [
+                  "BlockNumber"
+                ],
+                "type": 1
+              }
+            }
+          ],
+          "docs": [
+            " ERC721Votes read functions"
+          ],
+          "label": "get_past_votes",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "u32"
+            ],
+            "type": 1
+          },
+          "selector": "0x7995d5fc"
+        },
+        {
+          "args": [
+            {
+              "label": "account",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 6
+              }
+            }
+          ],
+          "docs": [],
+          "label": "get_votes",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "u32"
+            ],
+            "type": 1
+          },
+          "selector": "0x5f9d374c"
+        },
+        {
+          "args": [
+            {
               "label": "proposal_id",
               "type": {
                 "displayName": [
@@ -428,7 +522,7 @@
                 "displayName": [
                   "VoteType"
                 ],
-                "type": 36
+                "type": 40
               }
             }
           ],
@@ -442,7 +536,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 37
+            "type": 41
           },
           "selector": "0xcaed155c"
         },
@@ -466,7 +560,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 37
+            "type": 41
           },
           "selector": "0xd00ec894"
         },
@@ -478,7 +572,7 @@
                 "displayName": [
                   "Transaction"
                 ],
-                "type": 32
+                "type": 36
               }
             },
             {
@@ -499,9 +593,33 @@
             "displayName": [
               "Result"
             ],
-            "type": 39
+            "type": 43
           },
           "selector": "0xcb14b5b5"
+        },
+        {
+          "args": [
+            {
+              "label": "delegatee",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 6
+              }
+            }
+          ],
+          "docs": [],
+          "label": "delegate",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 41
+          },
+          "selector": "0xc59654fe"
         }
       ]
     },
@@ -710,6 +828,24 @@
               }
             },
             "name": "voting_period"
+          },
+          {
+            "layout": {
+              "cell": {
+                "key": "0x0500000000000000000000000000000000000000000000000000000000000000",
+                "ty": 28
+              }
+            },
+            "name": "delegations"
+          },
+          {
+            "layout": {
+              "cell": {
+                "key": "0x0600000000000000000000000000000000000000000000000000000000000000",
+                "ty": 32
+              }
+            },
+            "name": "delegation_blocks"
           }
         ]
       }
@@ -1168,6 +1304,78 @@
         "id": 28,
         "type": {
           "def": {
+            "composite": {
+              "fields": [
+                {
+                  "type": 30
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "K",
+              "type": 1
+            },
+            {
+              "name": "V",
+              "type": 29
+            }
+          ],
+          "path": [
+            "openbrush_lang",
+            "storage",
+            "mapping",
+            "Mapping"
+          ]
+        }
+      },
+      {
+        "id": 29,
+        "type": {
+          "def": {
+            "tuple": [
+              6,
+              6
+            ]
+          }
+        }
+      },
+      {
+        "id": 30,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 31
+            }
+          }
+        }
+      },
+      {
+        "id": 31,
+        "type": {
+          "def": {
+            "tuple": [
+              1,
+              29
+            ]
+          }
+        }
+      },
+      {
+        "id": 32,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 1
+            }
+          }
+        }
+      },
+      {
+        "id": 33,
+        "type": {
+          "def": {
             "variant": {
               "variants": [
                 {
@@ -1198,40 +1406,7 @@
         }
       },
       {
-        "id": 29,
-        "type": {
-          "def": {
-            "variant": {
-              "variants": [
-                {
-                  "index": 0,
-                  "name": "None"
-                },
-                {
-                  "fields": [
-                    {
-                      "type": 1
-                    }
-                  ],
-                  "index": 1,
-                  "name": "Some"
-                }
-              ]
-            }
-          },
-          "params": [
-            {
-              "name": "T",
-              "type": 1
-            }
-          ],
-          "path": [
-            "Option"
-          ]
-        }
-      },
-      {
-        "id": 30,
+        "id": 34,
         "type": {
           "def": {
             "tuple": [
@@ -1243,7 +1418,7 @@
         }
       },
       {
-        "id": 31,
+        "id": 35,
         "type": {
           "def": {
             "variant": {
@@ -1292,7 +1467,7 @@
         }
       },
       {
-        "id": 32,
+        "id": 36,
         "type": {
           "def": {
             "composite": {
@@ -1304,17 +1479,17 @@
                 },
                 {
                   "name": "selector",
-                  "type": 33,
+                  "type": 37,
                   "typeName": "[u8; 4]"
                 },
                 {
                   "name": "input",
-                  "type": 34,
+                  "type": 38,
                   "typeName": "Vec<u8>"
                 },
                 {
                   "name": "transferred_value",
-                  "type": 35,
+                  "type": 39,
                   "typeName": "Balance"
                 },
                 {
@@ -1334,7 +1509,7 @@
         }
       },
       {
-        "id": 33,
+        "id": 37,
         "type": {
           "def": {
             "array": {
@@ -1345,7 +1520,7 @@
         }
       },
       {
-        "id": 34,
+        "id": 38,
         "type": {
           "def": {
             "sequence": {
@@ -1355,7 +1530,7 @@
         }
       },
       {
-        "id": 35,
+        "id": 39,
         "type": {
           "def": {
             "primitive": "u128"
@@ -1363,7 +1538,7 @@
         }
       },
       {
-        "id": 36,
+        "id": 40,
         "type": {
           "def": {
             "variant": {
@@ -1392,7 +1567,7 @@
         }
       },
       {
-        "id": 37,
+        "id": 41,
         "type": {
           "def": {
             "variant": {
@@ -1409,7 +1584,7 @@
                 {
                   "fields": [
                     {
-                      "type": 38
+                      "type": 42
                     }
                   ],
                   "index": 1,
@@ -1425,7 +1600,7 @@
             },
             {
               "name": "E",
-              "type": 38
+              "type": 42
             }
           ],
           "path": [
@@ -1434,7 +1609,7 @@
         }
       },
       {
-        "id": 38,
+        "id": 42,
         "type": {
           "def": {
             "variant": {
@@ -1462,6 +1637,10 @@
                 {
                   "index": 5,
                   "name": "VoteHasNotSucceeded"
+                },
+                {
+                  "index": 6,
+                  "name": "NotOwner"
                 }
               ]
             }
@@ -1475,7 +1654,7 @@
         }
       },
       {
-        "id": 39,
+        "id": 43,
         "type": {
           "def": {
             "variant": {
@@ -1492,7 +1671,7 @@
                 {
                   "fields": [
                     {
-                      "type": 38
+                      "type": 42
                     }
                   ],
                   "index": 1,
@@ -1508,7 +1687,7 @@
             },
             {
               "name": "E",
-              "type": 38
+              "type": 42
             }
           ],
           "path": [
