@@ -74,7 +74,7 @@ export function Explore() {
             ))}
           />
         ) : (
-          "No DAO's yet created."
+          <div className="mt-4"> No DAO's yet created.</div>
         )}
       </Page>
     </ErrorBoundary>
