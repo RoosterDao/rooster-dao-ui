@@ -1,6 +1,12 @@
-import { PencilAltIcon, ExclamationCircleIcon } from '@heroicons/react/outline';
+import {
+  PencilAltIcon,
+  ExclamationCircleIcon,
+  StarIcon,
+  ArrowCircleLeftIcon,
+} from '@heroicons/react/outline';
 import { useState } from 'react';
 import { useParams } from 'react-router';
+import { Link } from 'react-router-dom';
 import { CopyButton } from '../../src/ui/components/common/CopyButton';
 import { useApi } from '../../src/ui/contexts';
 import { truncate } from '../../src/ui/util';
@@ -17,6 +23,7 @@ export function ViewProposal() {
   if (!address || !proposalId) throw new Error('No address in url');
 
   const [hasVoted, setHasVoted] = useState(false as Boolean | null);
+  const [justVoted, setJustVoted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const { keyring } = useApi();
   const { value: accountId } = useGlobalAccountId();
@@ -32,12 +39,26 @@ export function ViewProposal() {
 
   const { getVotes } = useHackedIndexer();
   const votes = getVotes(address, accountId);
-  const canVote = votes !== '0';
 
   const castVote = async (vote: VoteType) => {
     await txCastVote(proposalId, vote);
     queryHasVoted(proposalId).then(setHasVoted);
+    setJustVoted(true);
   };
+
+  let votingState;
+  const currentDate = Date.now();
+  const canVote =
+    votes !== '0' && currentDate > proposal?.voteStart && currentDate < proposal?.voteEnd;
+  if (currentDate < proposal?.voteStart) {
+    votingState = 'Voting period has not yet started.';
+  } else if (currentDate > proposal?.voteEnd) {
+    votingState = 'Voting period has already ended.';
+  } else if (hasVoted) {
+    votingState = 'You have already voted on this proposal!';
+  } else {
+    votingState = "You don't have enough voting power to vote on this proposal.";
+  }
 
   // derive dates
   const steps = [] as Step[];
@@ -89,8 +110,19 @@ export function ViewProposal() {
     <Page>
       <div className="grid grid-cols-6 w-full">
         <div className="col-span-4">
-          {' '}
           <div className="inline-block">
+            <div className="h-8 mb-4">
+              <Link to={`/dao/${address}`}>
+                <button className="flex font-semibold items-center dark:text-gray-300 dark:bg-elevation-1 dark:hover:bg-elevation-2 dark:border-gray-700 text-gray-600 hover:text-gray-400 h-full  rounded">
+                  <ArrowCircleLeftIcon
+                    className="w-4 dark:text-gray-500 mr-1 justify-self-end"
+                    aria-hidden="true"
+                    fontSize="1.5rem"
+                  />
+                  {dao.name}
+                </button>
+              </Link>
+            </div>
             <div>
               <div className="inline mr-4">Proposal ID:</div>
               <div className="inline mt-4 dark:text-gray-400 text-gray-500 text-sm">
@@ -127,16 +159,21 @@ export function ViewProposal() {
                 </div>
               </a>
             ) : (
-              <div className="mt-6 flex items-center text-base dark:text-gray-300 text-gray-500 space-x-2">
-                <ExclamationCircleIcon className="h-8 w-8 dark:text-gray-500 text-gray-400 group-hover:text-gray-500" />
-                <span>
-                  {hasVoted
-                    ? 'You have already voted on this proposal!'
-                    : "You don't have enough voting power to vote on this proposal."}
-                </span>
+              <div className="mt-8 flex items-center text-base dark:text-gray-300 text-gray-500 space-x-2">
+                {justVoted ? (
+                  <>
+                    <StarIcon className="h-8 w-8 dark:text-gray-500 text-gray-400 group-hover:text-gray-500" />
+                    <span>Your vote has been submitted successfully!</span>
+                  </>
+                ) : (
+                  <>
+                    <ExclamationCircleIcon className="h-8 w-8 dark:text-gray-500 text-gray-400 group-hover:text-gray-500" />
+                    <span>{votingState}</span>
+                  </>
+                )}
               </div>
             )}
-            <div className="mt-6">
+            <div className="mt-8">
               <div>Description:</div>
               <div className="mt-4 collapsible-panel">
                 <div className="panel-body p-4 markdown border-t dark:border-gray-700 border-gray-200">
