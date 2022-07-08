@@ -32,9 +32,9 @@ export function Explore() {
           <div className="col-span-1">Holders</div>
           <div className="col-span-1">Voters</div>
         </div>
-        {daosList.map(dao => (
-          <div className="grid grid-cols-8 w-full justify-items-center">
-            <div className="col-span-2 pt-3 justify-self-start dark:hover:text-gray-300 hover:text-gray-400">
+        {daosList.map((dao, index) => (
+          <div className="grid grid-cols-8 w-full justify-items-center hover:text-gray-400 dark:hover:text-gray-300">
+            <div className="col-span-2 pt-3 justify-self-start">
               <Link to={`/dao/${dao.address}`}> {dao.name}</Link>
             </div>
             <div className="col-span-2">
@@ -48,8 +48,8 @@ export function Explore() {
               </div>
             </div>
             <div className="col-span-1 pt-3"></div>
-            <div className="col-span-1 pt-3"></div>
-            <div className="col-span-1 pt-3"></div>
+            <div className="col-span-1 pt-3">tbd</div>
+            <div className="col-span-1 pt-3">tbd</div>
           </div>
         ))}
       </Page>
