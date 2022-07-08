@@ -4,16 +4,21 @@ import {
   StarIcon,
   ArrowCircleLeftIcon,
 } from '@heroicons/react/outline';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { Link } from 'react-router-dom';
 import { CopyButton } from '../../src/ui/components/common/CopyButton';
 import { useApi } from '../../src/ui/contexts';
 import { truncate } from '../../src/ui/util';
-import { useCastVote, useHasVoted } from '../lib/api';
+import { useCastVote, useHasVoted, useProposalState } from '../lib/api';
 import { useDaos, useGlobalAccountId, useProposals } from '../lib/hooks';
 import { useHackedIndexer } from './HackedIndexerContext';
-
+import {
+  lastCellBody,
+  lastCellHeader,
+  Table,
+  TableRow,
+} from './Table';
 import { Page } from './Page';
 import { Timeline, Step } from './ProposalTimeLine';
 import { VoteType, VotingModal } from './VotingModal';
@@ -25,6 +30,7 @@ export function ViewProposal() {
   const [hasVoted, setHasVoted] = useState(false as Boolean | null);
   const [justVoted, setJustVoted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [proposalVotes, setVotes] = useState({} as Record<string, {}>);
   const { keyring } = useApi();
   const { value: accountId } = useGlobalAccountId();
   const { getDao } = useDaos();
@@ -34,15 +40,22 @@ export function ViewProposal() {
 
   const { txCastVote } = useCastVote(address);
 
+  const { getVotes } = useHackedIndexer();
+  const votes = getVotes(address, accountId);
+
   const { queryHasVoted } = useHasVoted(address);
   queryHasVoted(proposalId).then(setHasVoted);
 
-  const { getVotes } = useHackedIndexer();
-  const votes = getVotes(address, accountId);
+  const { queryProposalVotes } = useProposalState(address);
+
+  useEffect(() => {
+    queryProposalVotes(proposalId).then(votes => setVotes(votes));
+  }, [proposal]);
 
   const castVote = async (vote: VoteType) => {
     await txCastVote(proposalId, vote);
     queryHasVoted(proposalId).then(setHasVoted);
+    queryProposalVotes(proposalId).then(votes => setVotes(votes));
     setJustVoted(true);
   };
 
@@ -109,11 +122,11 @@ export function ViewProposal() {
   return (
     <Page>
       <div className="grid grid-cols-6 w-full">
-        <div className="col-span-4">
+        <div className="col-span-3">
           <div className="inline-block">
-            <div className="h-8 mb-4">
+            <div className="h-8 mb-4 text-sm">
               <Link to={`/dao/${address}`}>
-                <button className="flex font-semibold items-center dark:text-gray-300 dark:bg-elevation-1 dark:hover:bg-elevation-2 dark:border-gray-700 text-gray-600 hover:text-gray-400 h-full  rounded">
+                <button className="flex font-semibold items-center dark:text-gray-300 dark:bg-elevation-1 dark:hover:bg-elevation-2 dark:border-gray-700 text-gray-400 hover:text-gray-300 h-full  rounded">
                   <ArrowCircleLeftIcon
                     className="w-4 dark:text-gray-500 mr-1 justify-self-end"
                     aria-hidden="true"
@@ -151,7 +164,7 @@ export function ViewProposal() {
             {!hasVoted && canVote ? (
               <a
                 onClick={() => setIsOpen(true)}
-                className="inline-flex mt-4 w-max justify-between items-center px-6 py-4 border text-gray-500 dark:border-gray-700 border-gray-200 rounded-md dark:bg-elevation-1 dark:hover:bg-elevation-2 hover:bg-gray-100 cursor-pointer"
+                className="inline-flex mt-8 w-max justify-between items-center px-6 py-4 border text-gray-500 dark:border-gray-700 border-gray-200 rounded-md dark:bg-elevation-1 dark:hover:bg-elevation-2 hover:bg-gray-100 cursor-pointer"
               >
                 <div className="flex items-center text-base dark:text-gray-300 text-gray-500 space-x-2">
                   <PencilAltIcon className="h-8 w-8 dark:text-gray-500 text-gray-400 group-hover:text-gray-500" />
@@ -174,7 +187,6 @@ export function ViewProposal() {
               </div>
             )}
             <div className="mt-8">
-              <div>Description:</div>
               <div className="mt-4 collapsible-panel">
                 <div className="panel-body p-4 markdown border-t dark:border-gray-700 border-gray-200">
                   {/* eslint-disable-next-line react/no-children-prop */}
@@ -185,6 +197,25 @@ export function ViewProposal() {
           </div>
         </div>
         <div className="col-span-2">
+          <Table
+            classes="mt-8"
+            header={
+              <>
+                <th className="w-36">For</th>
+                <th className="w-36">Against</th>
+                <th className={`${lastCellHeader} w-36`}>Abstain</th>
+              </>
+            }
+            body={
+              <TableRow key={index} index={index}>
+                <td className="">{proposalVotes?.for ?? '...'}</td>
+                <td className="">{proposalVotes?.against ?? '...'}</td>
+                <td className={lastCellBody}>{proposalVotes?.abstain ?? '...'}</td>
+              </TableRow>
+            }
+          />
+        </div>
+        <div className="col-span-1">
           <div className="w-40 float-right">
             <Timeline steps={steps}></Timeline>{' '}
           </div>

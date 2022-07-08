@@ -8,7 +8,8 @@ import abi from '../lib/metadata.json';
 
 interface StateInterface {
   getVotes: Function;
-  delegateVotes: Array<any>;
+  getProposalVoters: Function;
+  getTopVoters: Function;
 }
 
 export const IndexerContext = createContext({} as StateInterface);
@@ -21,9 +22,28 @@ export const IndexerContextProvider = ({ children }: React.PropsWithChildren<Par
   const [delegateVotes, setDelegateVotes] = useReducer((state, { dao, account, votes }) => {
     return { ...state, [dao]: { ...(state[dao] ?? {}), [account]: votes.toString() } };
   }, {});
+  const [proposalVotes, addToProposalVotes] = useReducer((state, { dao, voter }) => {
+    const newValue = state?.[dao]?.[voter] ? state[dao]?.[voter] + 1 : 1;
+    return { ...state, [dao]: { ...(state[dao] ?? {}), [voter]: newValue } };
+  }, {});
 
   const getVotes = (dao, accountId) => {
     return delegateVotes?.[dao]?.[accountId] ?? '0';
+  };
+
+  const getProposalVoters = dao => {
+    return Object.values(proposalVotes?.[dao] ?? [])?.length ?? 0;
+  };
+
+  const getTopVoters = dao => {
+    const votes = proposalVotes?.[dao] ?? {};
+    return Object.keys(votes)
+      .map(x => ({
+        address: x,
+        proposalsVoted: votes[x],
+        totalVotes: getVotes(dao, x),
+      }))
+      .sort((a, b) => b.proposalsVoted - a.proposalsVoted);
   };
 
   const resolveEvents = events => {
@@ -34,6 +54,7 @@ export const IndexerContextProvider = ({ children }: React.PropsWithChildren<Par
         case 'ProposalCreated':
           break;
         case 'VoteCast':
+          addToProposalVotes({ dao, voter: args[0].toHuman() });
           break;
         case 'DelegateChanged':
           break;
@@ -109,7 +130,7 @@ export const IndexerContextProvider = ({ children }: React.PropsWithChildren<Par
     }
   }, [api]);
 
-  const state = { getVotes };
+  const state = { getVotes, getProposalVoters, getTopVoters };
 
   return <IndexerContext.Provider value={state}>{children}</IndexerContext.Provider>;
 };

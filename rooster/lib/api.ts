@@ -177,7 +177,7 @@ export function useCastVote(dao) {
 }
 
 export function useHasVoted(dao) {
-  const { api, keyring } = useApi();
+  const { api } = useApi();
   const { value: caller } = useGlobalAccountId();
 
   const queryHasVoted = async (proposalId, accountId = caller): Promise<Boolean | null> => {
@@ -191,4 +191,32 @@ export function useHasVoted(dao) {
   };
 
   return { queryHasVoted };
+}
+
+export function useProposalState(dao) {
+  const { api } = useApi();
+  const { value: caller } = useGlobalAccountId();
+
+  const queryState = async (proposalId): Promise<string | null> => {
+    const contract = new Contract(api, abi, dao);
+    const result = await contract.query.state(caller, {}, proposalId);
+    if (result.result.isOk) {
+      return result.output?.toHuman() as string;
+    } else {
+      return null;
+    }
+  };
+
+  const queryProposalVotes = async (proposalId): Promise<{ for; against; abstain }> => {
+    const contract = new Contract(api, abi, dao);
+    const result = await contract.query.proposalVotes(caller, {}, proposalId);
+    if (result.result.isOk) {
+      const array = result.output?.toArray?.().map(x => x.toNumber()) ?? [0, 0, 0];
+      return { for: array[1], against: array[0], abstain: array[2] };
+    } else {
+      return { for: 0, against: 0, abstain: 0 };
+    }
+  };
+
+  return { queryState, queryProposalVotes };
 }

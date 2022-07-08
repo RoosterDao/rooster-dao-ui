@@ -11,6 +11,7 @@ import { useNavigate, useParams } from 'react-router';
 import { useDaos, useGlobalAccountId, useProposals } from '../lib/hooks';
 import { TransactionOptions } from './TransactionOptions';
 import { Link } from 'react-router-dom';
+import { ArrowCircleLeftIcon } from '@heroicons/react/outline';
 
 export function AddProposal() {
   const { address } = useParams();
@@ -46,6 +47,18 @@ export function AddProposal() {
   return (
     <ErrorBoundary>
       <Page>
+        <div className="h-8 mb-4 text-sm">
+          <Link to={`/dao/${address}`}>
+            <button className="flex font-semibold items-center dark:text-gray-300 dark:bg-elevation-1 dark:hover:bg-elevation-2 dark:border-gray-700 text-gray-400 hover:text-gray-300 h-full  rounded">
+              <ArrowCircleLeftIcon
+                className="w-4 dark:text-gray-500 mr-1 justify-self-end"
+                aria-hidden="true"
+                fontSize="1.5rem"
+              />
+              {dao.name}
+            </button>
+          </Link>
+        </div>
         <h2 className="inline pr-8 text-xl font-semibold dark:text-white text-gray-700">
           Create a new proposal for{' '}
           <Link className="dark:hover:text-gray-300 hover:text-gray-400" to={`/dao/${address}`}>
