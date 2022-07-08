@@ -80,7 +80,7 @@ export function ViewDao() {
         {votes === '0' && (
           <>
             <InformationCircleIcon
-              className="inline cursor-help ml-1.5 w-4 h-4 dark:text-gray-500"
+              className="inline cursor-help ml-1.5 pt-4 w-8 h-8 dark:text-gray-500"
               data-tip
               data-for={`formFieldHelp-delegation`}
             />
@@ -108,8 +108,8 @@ export function ViewDao() {
           </div>
           <div className="col-span-1 pt-3"></div>
           <div className="col-span-1 pt-3"></div>
-          <div className="col-span-1 pt-3"></div>
-          <div className="col-span-1 pt-3"></div>
+          <div className="col-span-1 pt-3">tbd</div>
+          <div className="col-span-1 pt-3">tbd</div>
         </div>
       ))}
       {isOpen && <DelegationModal setIsOpen={setIsOpen} isOpen={isOpen} setDelegate={delegate} />}

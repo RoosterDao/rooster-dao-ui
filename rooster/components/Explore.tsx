@@ -22,36 +22,46 @@ export function Explore() {
           className="float-right border-2 dark:border-gray-700 border-gray-200"
           onClick={forgetAllDaos}
         >
-          <TrashIcon className="w-4 dark:text-gray-500 mr-1 justify-self-end" />
+          <TrashIcon className="w-4 dark:text-gray-500 mr-1 " />
           Forget all DAO's
         </Button>
-        <div className="mt-12 font-semibold grid grid-cols-8 w-full justify-items-center">
-          <div className="col-span-2 justify-self-start">Name</div>
-          <div className="col-span-2">Address</div>
-          <div className="col-span-1">Proposals</div>
-          <div className="col-span-1">Holders</div>
-          <div className="col-span-1">Voters</div>
-        </div>
-        {daosList.map((dao, index) => (
-          <div className="grid grid-cols-8 w-full justify-items-center hover:text-gray-400 dark:hover:text-gray-300">
-            <div className="col-span-2 pt-3 justify-self-start">
-              <Link to={`/dao/${dao.address}`}> {dao.name}</Link>
-            </div>
-            <div className="col-span-2">
-              <div className="mt-4 dark:text-gray-400 text-gray-500 text-sm">
-                <div className="inline-flex items-center">
-                  <span className="inline-block relative bg-blue-500 text-blue-400 bg-opacity-20 text-xs px-1.5 py-1 font-mono rounded">
-                    {truncate(dao.address, 10)}
-                  </span>
-                  <CopyButton className="ml-1" value={dao.address} />
-                </div>
-              </div>
-            </div>
-            <div className="col-span-1 pt-3"></div>
-            <div className="col-span-1 pt-3">tbd</div>
-            <div className="col-span-1 pt-3">tbd</div>
-          </div>
-        ))}
+        <table className="table-auto mt-12 font-semibold w-full mr-12 text-center">
+          <thead>
+            <tr className="bg-neutral-50 pt-1.5 pb-1.5">
+              <th className="text-left pl-4 rounded-tl-2xl">Name</th>
+              <th className="">Address</th>
+              <th className="">Proposals</th>
+              <th className="">Holders</th>
+              <th className="rounded-tr-2xl">Voters</th>
+            </tr>
+          </thead>
+          <tbody>
+            {daosList.map((dao, index) => (
+              <tr
+                className={`${
+                  index % 2 ? 'bg-neutral-50' : 'bg-white'
+                } hover:text-gray-400 dark:hover:text-gray-300 mt-1.5 mb-1.5`}
+              >
+                <td className="text-left rounded-l-md pl-4">
+                  <Link to={`/dao/${dao.address}`}> {dao.name}</Link>
+                </td>
+                <td className="pb-4">
+                  <div className="mt-4 dark:text-gray-400 text-gray-500 text-sm">
+                    <div className="inline-flex items-center">
+                      <span className="inline-block relative bg-blue-500 text-blue-400 bg-opacity-20 text-xs px-1.5 py-1 font-mono rounded">
+                        {truncate(dao.address, 10)}
+                      </span>
+                      <CopyButton className="ml-1" value={dao.address} />
+                    </div>
+                  </div>
+                </td>
+                <td className=""></td>
+                <td className="">tbd</td>
+                <td className="rounded-r-xl">tbd</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </Page>
     </ErrorBoundary>
   );
