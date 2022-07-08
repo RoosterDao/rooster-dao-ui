@@ -131,20 +131,24 @@ export function useDelegate(dao) {
   const { api, keyring } = useApi();
   const { value: caller } = useGlobalAccountId();
 
-  const delegate = (accountId, options) => {
-    const message = abi.findMessage('delegate');
-    const contract = new Contract(api, abi, dao);
-    const transformed = transformUserInput(contract.registry, message.args, {
-      delegatee: accountId,
+  const delegate = (accountId, options) =>
+    new Promise<any>((resolve, reject) => {
+      const message = abi.findMessage('delegate');
+      const contract = new Contract(api, abi, dao);
+      const transformed = transformUserInput(contract.registry, message.args, {
+        delegatee: accountId,
+      });
+      if (!options.gasLimit) {
+        options.gasLimit = defaultGasLimit;
+      }
+      const tx = prepareContractTx(contract.tx['delegate'], options, transformed);
+      tx.signAndSend(keyring.getPair(caller), { signer: undefined }, async result => {
+        await result;
+        if (result.events.length > 0) {
+          resolve(true);
+        }
+      });
     });
-    if (!options.gasLimit) {
-      options.gasLimit = defaultGasLimit;
-    }
-    const tx = prepareContractTx(contract.tx['delegate'], options, transformed);
-    tx.signAndSend(keyring.getPair(caller), { signer: undefined }, async result => {
-      // reactions to this transaction should be handled by event listener
-    });
-  };
 
   return { delegate };
 }
@@ -193,6 +197,23 @@ export function useHasVoted(dao) {
   return { queryHasVoted };
 }
 
+export function useGetVotes(dao) {
+  const { api } = useApi();
+  const { value: caller } = useGlobalAccountId();
+
+  const queryGetVotes = async (accountId = caller): Promise<number | null> => {
+    const contract = new Contract(api, abi, dao);
+    const result = await contract.query.getVotes(accountId, {}, accountId);
+    if (result.result.isOk) {
+      return result.output?.toNumber() as number | null;
+    } else {
+      return null;
+    }
+  };
+
+  return { queryGetVotes };
+}
+
 export function useProposalState(dao) {
   const { api } = useApi();
   const { value: caller } = useGlobalAccountId();
@@ -218,5 +239,5 @@ export function useProposalState(dao) {
     }
   };
 
-  return { queryState, queryProposalVotes };
+  return { queryState, queryProposalVotes, useGetVotes };
 }

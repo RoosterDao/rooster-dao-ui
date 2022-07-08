@@ -3,6 +3,7 @@ import {
   ExclamationCircleIcon,
   StarIcon,
   ArrowCircleLeftIcon,
+  ClockIcon,
 } from '@heroicons/react/outline';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
@@ -10,15 +11,10 @@ import { Link } from 'react-router-dom';
 import { CopyButton } from '../../src/ui/components/common/CopyButton';
 import { useApi } from '../../src/ui/contexts';
 import { truncate } from '../../src/ui/util';
-import { useCastVote, useHasVoted, useProposalState } from '../lib/api';
+import { useCastVote, useGetVotes, useHasVoted, useProposalState } from '../lib/api';
 import { useDaos, useGlobalAccountId, useProposals } from '../lib/hooks';
 import { useHackedIndexer } from './HackedIndexerContext';
-import {
-  lastCellBody,
-  lastCellHeader,
-  Table,
-  TableRow,
-} from './Table';
+import { lastCellBody, lastCellHeader, Table, TableRow } from './Table';
 import { Page } from './Page';
 import { Timeline, Step } from './ProposalTimeLine';
 import { VoteType, VotingModal } from './VotingModal';
@@ -29,8 +25,10 @@ export function ViewProposal() {
 
   const [hasVoted, setHasVoted] = useState(false as Boolean | null);
   const [justVoted, setJustVoted] = useState(false);
+  const [waitForVote, setWaitForVote] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [proposalVotes, setVotes] = useState({} as Record<string, {}>);
+  const [proposalVotes, setProposalVotes] = useState({} as Record<string, {}>);
+  const [votes, setVotes] = useState(0);
   const { keyring } = useApi();
   const { value: accountId } = useGlobalAccountId();
   const { getDao } = useDaos();
@@ -40,37 +38,51 @@ export function ViewProposal() {
 
   const { txCastVote } = useCastVote(address);
 
-  const { getVotes } = useHackedIndexer();
-  const votes = getVotes(address, accountId);
-
   const { queryHasVoted } = useHasVoted(address);
   queryHasVoted(proposalId).then(setHasVoted);
 
   const { queryProposalVotes } = useProposalState(address);
+  const { queryGetVotes } = useGetVotes(address);
 
   useEffect(() => {
-    queryProposalVotes(proposalId).then(votes => setVotes(votes));
+    queryProposalVotes(proposalId).then(setProposalVotes);
   }, [proposal]);
 
+  useEffect(() => {
+    queryGetVotes(accountId).then(setVotes);
+  }, [accountId]);
+
   const castVote = async (vote: VoteType) => {
+    setWaitForVote(true);
     await txCastVote(proposalId, vote);
     queryHasVoted(proposalId).then(setHasVoted);
-    queryProposalVotes(proposalId).then(votes => setVotes(votes));
-    setJustVoted(true);
+    queryProposalVotes(proposalId).then(setProposalVotes);
+    queryGetVotes(accountId).then(setVotes);
+    //setJustVoted(true);
   };
 
   let votingState;
+  let Icon;
   const currentDate = Date.now();
-  const canVote =
-    votes !== '0' && currentDate > proposal?.voteStart && currentDate < proposal?.voteEnd;
-  if (currentDate < proposal?.voteStart) {
+  const canVote = votes > 0 && currentDate > proposal?.voteStart && currentDate < proposal?.voteEnd;
+  if (justVoted) {
+    votingState = 'Your vote has been submitted successfully!';
+    Icon = StarIcon;
+  } else if (waitForVote) {
+    votingState = 'Please wait, your vote is being submitted.';
+    Icon = ClockIcon;
+  } else if (currentDate < proposal?.voteStart) {
     votingState = 'Voting period has not yet started.';
+    Icon = ExclamationCircleIcon;
   } else if (currentDate > proposal?.voteEnd) {
     votingState = 'Voting period has already ended.';
+    Icon = ExclamationCircleIcon;
   } else if (hasVoted) {
     votingState = 'You have already voted on this proposal!';
+    Icon = ExclamationCircleIcon;
   } else {
     votingState = "You don't have enough voting power to vote on this proposal.";
+    Icon = ExclamationCircleIcon;
   }
 
   // derive dates
@@ -173,17 +185,8 @@ export function ViewProposal() {
               </a>
             ) : (
               <div className="mt-8 flex items-center text-base dark:text-gray-300 text-gray-500 space-x-2">
-                {justVoted ? (
-                  <>
-                    <StarIcon className="h-8 w-8 dark:text-gray-500 text-gray-400 group-hover:text-gray-500" />
-                    <span>Your vote has been submitted successfully!</span>
-                  </>
-                ) : (
-                  <>
-                    <ExclamationCircleIcon className="h-8 w-8 dark:text-gray-500 text-gray-400 group-hover:text-gray-500" />
-                    <span>{votingState}</span>
-                  </>
-                )}
+                <Icon className="h-8 w-8 dark:text-gray-500 text-gray-400 group-hover:text-gray-500" />
+                <span>{votingState}</span>
               </div>
             )}
             <div className="mt-8">

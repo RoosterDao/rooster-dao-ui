@@ -13,8 +13,8 @@ const options = [
     value: RPC.LOCAL,
   },
   {
-    label: 'Contracts (Rococo)',
-    value: RPC.CONTRACTS,
+    label: 'Rooster Node',
+    value: RPC.ROOSTER,
   },
 ];
 

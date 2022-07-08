@@ -10,8 +10,8 @@ import { Link } from 'react-router-dom';
 import { PlusSmIcon, TrashIcon, UserIcon, InformationCircleIcon } from '@heroicons/react/outline';
 import { useHackedIndexer } from './HackedIndexerContext';
 import { DelegationModal } from './DelegationModal';
-import { useEffect, useLayoutEffect, useReducer, useState } from 'react';
-import { useDelegate, useProposalState } from '../lib/api';
+import { useEffect, useReducer, useState } from 'react';
+import { useDelegate, useGetVotes, useProposalState } from '../lib/api';
 import ReactTooltip from 'react-tooltip';
 import {
   firstCellBody,
@@ -31,7 +31,7 @@ export function ViewDao() {
   const navigate = useNavigate();
   const { keyring } = useApi();
   const [isOpen, setIsOpen] = useState(false);
-  const [lol, setlolol] = useState(false);
+  const [votes, setVotes] = useState(0);
   const [proposalStates, setProposalStates] = useReducer((state, { id, value }) => {
     return { ...state, [id]: value };
   }, {} as Record<string, string | null>);
@@ -45,9 +45,10 @@ export function ViewDao() {
   const proposals = getProposalsForDao(dao?.address);
   const { value: accountId } = useGlobalAccountId();
 
-  const { getVotes, getTopVoters } = useHackedIndexer();
-  const votes = getVotes(address, accountId);
+  const { getTopVoters } = useHackedIndexer();
   const topVotes = getTopVoters(address);
+
+  const { queryGetVotes } = useGetVotes(address);
 
   const { queryState, queryProposalVotes } = useProposalState(address);
 
@@ -57,6 +58,15 @@ export function ViewDao() {
       queryProposalVotes(proposal.id).then(votes => setProposalVotes({ id: proposal.id, votes }));
     });
   }, [JSON.stringify(proposals)]);
+
+  useEffect(() => {
+    queryGetVotes(accountId).then(votes => setVotes(votes));
+  }, [accountId]);
+
+  const delegateVote = async (...args) => {
+    await delegate(...args);
+    queryGetVotes(accountId).then(votes => setVotes(votes));
+  };
 
   const forget = () => {
     forgetDao(dao);
@@ -84,7 +94,7 @@ export function ViewDao() {
         Forget DAO
       </Button>
       <div>
-        {votes !== '0' && (
+        {votes !== 0 && (
           <Link
             to={`/dao/${address}/proposal/new`}
             className="inline-flex mt-12 mr-6 w-max justify-between items-center px-6 py-4 border text-gray-500 dark:border-gray-700 border-gray-200 rounded-md dark:bg-elevation-1 dark:hover:bg-elevation-2 hover:bg-gray-100"
@@ -104,7 +114,7 @@ export function ViewDao() {
             <span>Delegate vote</span>
           </div>
         </a>
-        {votes === '0' && (
+        {votes === 0 && (
           <>
             <InformationCircleIcon
               className="inline cursor-help ml-1.5 pt-4 w-8 h-8 dark:text-gray-500"
@@ -193,7 +203,9 @@ export function ViewDao() {
           </TableRow>
         ))}
       />
-      {isOpen && <DelegationModal setIsOpen={setIsOpen} isOpen={isOpen} setDelegate={delegate} />}
+      {isOpen && (
+        <DelegationModal setIsOpen={setIsOpen} isOpen={isOpen} setDelegate={delegateVote} />
+      )}
     </Page>
   );
 }
