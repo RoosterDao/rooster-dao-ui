@@ -36,43 +36,46 @@ export function Explore() {
           <TrashIcon className="w-4 dark:text-gray-500 mr-1 " />
           Forget all DAO's
         </Button>
-
-        <Table
-          classes="mt-10 w-full"
-          header={
-            <>
-              <th className={firstCellHeader}>Name</th>
-              <th>Address</th>
-              <th className="w-40">Proposals</th>
-              <th className="w-40">Holders</th>
-              <th className={`${lastCellHeader} w-40`}>Voters</th>
-            </>
-          }
-          body={daosList.map((dao, index) => (
-            <TableRow
-              key={dao.address}
-              index={index}
-              onClick={() => navigate(`/dao/${dao.address}`)}
-            >
-              <td className={firstCellBody}>
-                <Link to={`/dao/${dao.address}`}> {dao.name}</Link>
-              </td>
-              <td className="pb-4">
-                <div className="mt-4 dark:text-gray-400 text-gray-500 text-sm">
-                  <div className="inline-flex items-center">
-                    <span className="inline-block relative bg-blue-500 text-blue-400 bg-opacity-20 text-xs px-1.5 py-1 font-mono rounded">
-                      {truncate(dao.address, 10)}
-                    </span>
-                    <CopyButton className="ml-1" value={dao.address} />
+        {daosList.length > 0 ? (
+          <Table
+            classes="mt-10 w-full"
+            header={
+              <>
+                <th className={firstCellHeader}>Name</th>
+                <th>Address</th>
+                <th className="w-40">Proposals</th>
+                <th className="w-40">Holders</th>
+                <th className={`${lastCellHeader} w-40`}>Voters</th>
+              </>
+            }
+            body={daosList.map((dao, index) => (
+              <TableRow
+                key={dao.address}
+                index={index}
+                onClick={() => navigate(`/dao/${dao.address}`)}
+              >
+                <td className={firstCellBody}>
+                  <Link to={`/dao/${dao.address}`}> {dao.name}</Link>
+                </td>
+                <td className="pb-4">
+                  <div className="mt-4 dark:text-gray-400 text-gray-500 text-sm">
+                    <div className="inline-flex items-center">
+                      <span className="inline-block relative bg-blue-500 text-blue-400 bg-opacity-20 text-xs px-1.5 py-1 font-mono rounded">
+                        {truncate(dao.address, 10)}
+                      </span>
+                      <CopyButton className="ml-1" value={dao.address} />
+                    </div>
                   </div>
-                </div>
-              </td>
-              <td>{getProposalsForDao(dao.address)?.length ?? '?'}</td>
-              <td>tbd</td>
-              <td className={lastCellBody}>{getProposalVoters(dao.address)}</td>
-            </TableRow>
-          ))}
-        />
+                </td>
+                <td>{getProposalsForDao(dao.address)?.length ?? '?'}</td>
+                <td>tbd</td>
+                <td className={lastCellBody}>{getProposalVoters(dao.address)}</td>
+              </TableRow>
+            ))}
+          />
+        ) : (
+          "No DAO's yet created."
+        )}
       </Page>
     </ErrorBoundary>
   );

@@ -58,7 +58,7 @@ export function ViewProposal() {
     queryHasVoted(proposalId).then(setHasVoted);
     queryProposalVotes(proposalId).then(setProposalVotes);
     queryGetVotes(accountId).then(setVotes);
-    //setJustVoted(true);
+    setJustVoted(true);
   };
 
   let votingState;

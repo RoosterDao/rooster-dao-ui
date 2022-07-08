@@ -132,77 +132,85 @@ export function ViewDao() {
 
       <h2 className="mt-12 mb-3 text-xl font-semibold dark:text-white text-gray-700">Proposals</h2>
 
-      <Table
-        classes="w-full"
-        header={
-          <>
-            <th className={firstCellHeader}>Description</th>
-            <th className="w-40">State</th>
-            <th className="w-40">For</th>
-            <th className="w-40">Against</th>
-            <th className={`${lastCellHeader} w-40`}>Abstain</th>
-          </>
-        }
-        body={proposals.map((proposal, index) => (
-          <TableRow
-            key={proposal.id}
-            index={index}
-            onClick={() => navigate(`/dao/${address}/proposal/${proposal.id}`)}
-          >
-            <td className={firstCellBody}>
-              <Link to={`/dao/${address}/proposal/${proposal.id}`}>
-                {proposal.description.length <= SHORT_DESCRIPTION_LENGTH
-                  ? proposal.description
-                  : proposal.description.substring(0, 140) + '.....'}
-              </Link>
-            </td>
-            <td>{proposalStates[proposal.id] ?? '...'}</td>
-            <td className="">{proposalVotes[proposal.id]?.for ?? '...'}</td>
-            <td className="">{proposalVotes[proposal.id]?.against ?? '...'}</td>
-            <td className={lastCellBody}>{proposalVotes[proposal.id]?.abstain ?? '...'}</td>
-          </TableRow>
-        ))}
-      />
+      {proposals.length > 0 ? (
+        <Table
+          classes="w-full"
+          header={
+            <>
+              <th className={firstCellHeader}>Description</th>
+              <th className="w-40">State</th>
+              <th className="w-40">For</th>
+              <th className="w-40">Against</th>
+              <th className={`${lastCellHeader} w-40`}>Abstain</th>
+            </>
+          }
+          body={proposals.map((proposal, index) => (
+            <TableRow
+              key={proposal.id}
+              index={index}
+              onClick={() => navigate(`/dao/${address}/proposal/${proposal.id}`)}
+            >
+              <td className={firstCellBody}>
+                <Link to={`/dao/${address}/proposal/${proposal.id}`}>
+                  {proposal.description.length <= SHORT_DESCRIPTION_LENGTH
+                    ? proposal.description
+                    : proposal.description.substring(0, 140) + '.....'}
+                </Link>
+              </td>
+              <td>{proposalStates[proposal.id] ?? '...'}</td>
+              <td className="">{proposalVotes[proposal.id]?.for ?? '...'}</td>
+              <td className="">{proposalVotes[proposal.id]?.against ?? '...'}</td>
+              <td className={lastCellBody}>{proposalVotes[proposal.id]?.abstain ?? '...'}</td>
+            </TableRow>
+          ))}
+        />
+      ) : (
+        'No proposals yet'
+      )}
 
       <h2 className="mt-12 mb-3 text-xl font-semibold dark:text-white text-gray-700">Top Voters</h2>
-
-      <Table
-        classes="w-full"
-        header={
-          <>
-            <th className={`${firstCellHeader} w-20`}>#</th>
-            <th className="text-left">Voter</th>
-            <th>Address</th>
-            <th className="w-40">Proposals voted</th>
-            <th className="w-40">Total Votes</th>
-            <th className={`${lastCellHeader} w-40`}>Voting power</th>
-          </>
-        }
-        body={topVotes.map((voter, index) => (
-          <TableRow key={voter.address} index={index}>
-            <td className={firstCellBody}>{index + 1}</td>
-            <td className="text-left">
-              <div className="inline mr-4">
-                <strong>{keyring.getPair(voter.address).meta.name}</strong>
-              </div>
-            </td>
-            <td>
-              {' '}
-              <div className="inline mt-4 dark:text-gray-400 text-gray-500 text-sm">
-                <div className="inline-flex items-center">
-                  <span className="inline-block relative bg-blue-500 text-blue-400 bg-opacity-20 text-xs px-1.5 py-1 font-mono rounded">
-                    {truncate(voter.address, 6)}
-                  </span>
-                  <CopyButton className="ml-1" value={voter.address} />
+      {topVotes.length > 0 ? (
+        <Table
+          classes="w-full"
+          header={
+            <>
+              <th className={`${firstCellHeader} w-20`}>#</th>
+              <th className="text-left">Voter</th>
+              <th>Address</th>
+              <th className="w-40">Proposals voted</th>
+              <th className="w-40">Total Votes</th>
+              <th className={`${lastCellHeader} w-40`}>Voting power</th>
+            </>
+          }
+          body={topVotes.map((voter, index) => (
+            <TableRow key={voter.address} index={index}>
+              <td className={firstCellBody}>{index + 1}</td>
+              <td className="text-left">
+                <div className="inline mr-4">
+                  <strong>{keyring.getPair(voter.address).meta.name}</strong>
                 </div>
-              </div>
-            </td>
-            <td className="">{voter.proposalsVoted}</td>
-            <td className="">{voter.totalVotes}</td>
-            <td className={lastCellBody}>tbd</td>
-          </TableRow>
-        ))}
-      />
+              </td>
+              <td>
+                {' '}
+                <div className="inline mt-4 dark:text-gray-400 text-gray-500 text-sm">
+                  <div className="inline-flex items-center">
+                    <span className="inline-block relative bg-blue-500 text-blue-400 bg-opacity-20 text-xs px-1.5 py-1 font-mono rounded">
+                      {truncate(voter.address, 6)}
+                    </span>
+                    <CopyButton className="ml-1" value={voter.address} />
+                  </div>
+                </div>
+              </td>
+              <td className="">{voter.proposalsVoted}</td>
+              <td className="">{voter.totalVotes}</td>
+              <td className={lastCellBody}>tbd</td>
+            </TableRow>
+          ))}
+        />
+      ) : (
+        'No voters yet'
+      )}
+
       {isOpen && (
         <DelegationModal setIsOpen={setIsOpen} isOpen={isOpen} setDelegate={delegateVote} />
       )}
