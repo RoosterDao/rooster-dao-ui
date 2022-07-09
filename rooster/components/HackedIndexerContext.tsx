@@ -106,8 +106,8 @@ export const IndexerContextProvider = ({ children }: React.PropsWithChildren<Par
     await api.isReady;
     const header = await api.rpc.chain.getHeader();
     latestBlock = header.number.toNumber();
-    const events = await traverseBlocks(header);
-    resolveEvents(events);
+    // const events = await traverseBlocks(header);
+    // resolveEvents(events);
     const currentBlock = await api.at(header.hash.toString());
     const eventsCurrentBlock = await traverseEvents(currentBlock);
     resolveEvents(eventsCurrentBlock);

@@ -6,7 +6,7 @@ import { Page } from './Page';
 import { truncate } from '../../src/ui/util';
 import { useDaos, useProposals } from '../lib/hooks';
 import { ErrorBoundary } from './ErrorBoundary';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { TrashIcon } from '@heroicons/react/outline';
 import { useHackedIndexer } from './HackedIndexerContext';
 import {

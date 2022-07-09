@@ -1,21 +1,29 @@
 // Add DAO Form
 
 import { BN as BNType } from '../../src/types';
-import { Button, Buttons } from '../../src/ui/components/common';
+import { Button, Buttons, Loader, LoaderSmall } from '../../src/ui/components/common';
 import { Dropdown } from '../../src/ui/components';
 import { ErrorBoundary } from './ErrorBoundary';
 import { governorCodeHash } from '../lib/settings';
-import { Input, InputNumber, Form, FormField, getValidation } from '../../src/ui/components/form';
+import {
+  Input,
+  InputNumber,
+  Form,
+  FormField,
+  getValidation,
+  InputBalance,
+} from '../../src/ui/components/form';
 import { instantiateDAO } from '../lib/api';
-import { Page } from './Page';
+import { Page, TxState } from './Page';
 import { useApi } from '../../src/ui/contexts';
-import { useAccountId, useFormField } from '../../src/ui/hooks';
+import { useAccountId, useBalance, useFormField } from '../../src/ui/hooks';
 import { useEffect, useState } from 'react';
 import BN from 'bn.js';
 import { useNavigate } from 'react-router';
 import { TransactionOptions } from './TransactionOptions';
 import { useDaos } from '../lib/hooks';
 import { checkOnChainCode } from '../../src/api';
+import { ExclamationCircleIcon } from '@heroicons/react/outline';
 
 const templateOptions = [
   { label: 'Rooster Governor Contract', value: 'rooster' },
@@ -69,11 +77,11 @@ export function AddDao() {
   const [template, setTemplate] = useState(templateOptions[0].value);
   const { addDao } = useDaos();
   const [codeHash, setCodeHash] = useState('');
-  const [votingDelay, setVotingDelay] = useState(new BN(0));
+  const [votingDelay, setVotingDelay] = useState(new BN(1));
   const [unitVotingDelay, setUnitVotingDelay] = useState(units.hours);
   const [votingPeriod, setVotingPeriod] = useState(new BN(1));
-  const [unitPeriod, setUnitPeriod] = useState(units.days);
-  const [executionDelay, setExecutionDelay] = useState(new BN(0));
+  const [unitPeriod, setUnitPeriod] = useState(units.hours);
+  const [executionDelay, setExecutionDelay] = useState(new BN(1));
   const [unitExecution, setUnitExecution] = useState(units.hours);
   const [isOnChain, setIsOnChain] = useState(true);
   const [options, setOptions] = useState({
@@ -85,6 +93,9 @@ export function AddDao() {
   const { api, keyring } = useApi();
   const navigate = useNavigate();
   const { value: accountId, onChange: setAccountId, ...accountIdValidation } = useAccountId();
+  const [txState, setTxState] = useState<TxState>('idle');
+  const isDisabled = txState === 'wait';
+  const { value: nftValue, onChange: setNftValue, ...valueValidation } = useBalance(100);
 
   const daoName = useFormField<string>('My Rooster DAO', value => {
     if (!!value) {
@@ -104,24 +115,29 @@ export function AddDao() {
       votingPeriod: resolveUnit(votingPeriod, unitPeriod),
       executionDelay: resolveUnit(executionDelay, unitExecution),
     };
-    const contract = await instantiateDAO({
-      api,
-      accountOrPair: keyring.getPair(accountId),
-      accountId,
-      codeHash: template === 'rooster' ? governorCodeHash : codeHash,
-      args,
-      options,
-    });
-    addDao(contract);
-    navigate(`/dao/${contract.address}`);
+    try {
+      options.value = nftValue;
+      setTxState('wait');
+      const contract = await instantiateDAO({
+        api,
+        accountOrPair: keyring.getPair(accountId),
+        accountId,
+        codeHash: template === 'rooster' ? governorCodeHash : codeHash,
+        args,
+        options,
+      });
+      addDao(contract);
+      navigate(`/dao/${contract.address}`);
+    } catch (e) {
+      setTxState('fail');
+    }
   };
 
   return (
     <ErrorBoundary>
       <Page>
-      <h3 className="mb-4 pr-8 text-xl font-semibold dark:text-white text-gray-700">
-        Add a DAO
-      </h3>
+        <h3 className="mb-4 pr-8 text-xl font-semibold dark:text-white text-gray-700">Add a DAO</h3>
+
         <div className="grid grid-cols-12 w-full">
           <div className="col-span-8 lg:col-span-8 2xl:col-span-8 rounded-lg w-full">
             <Form>
@@ -137,6 +153,7 @@ export function AddDao() {
                   onChange={x => setTemplate(x)}
                   options={templateOptions}
                   value={template}
+                  isDisabled={isDisabled}
                 />
               </FormField>
               {template === templateOptions[1].value && (
@@ -148,7 +165,7 @@ export function AddDao() {
                   message={'Please enter a valid code hash to continue.'}
                 >
                   <Input
-                    isDisabled={false}
+                    isDisabled={isDisabled}
                     placeholder="Enter code hash here"
                     onChange={value => setCodeHash(value)}
                     onFocus={e => e.target.select()}
@@ -166,7 +183,7 @@ export function AddDao() {
                 {...getValidation(daoName)}
               >
                 <Input
-                  isDisabled={false}
+                  isDisabled={isDisabled}
                   placeholder="My Rooster DAO"
                   onFocus={e => e.target.select()}
                   type="text"
@@ -175,7 +192,22 @@ export function AddDao() {
               </FormField>
 
               <FormField
+                help="The price users have to pay to become members of the DAO"
+                id="labelValue"
+                label="NFT price"
+                {...valueValidation}
+              >
+                <InputBalance
+                  value={nftValue}
+                  onChange={setNftValue}
+                  placeholder=""
+                  isDisabled={isDisabled}
+                />
+              </FormField>
+
+              <FormField
                 help=""
+                isDisabled={isDisabled}
                 id="labelVotingPeriod"
                 label="How long is a proposal open for votings?"
                 isError={false}
@@ -185,7 +217,7 @@ export function AddDao() {
               >
                 <InputNumber
                   value={votingPeriod}
-                  isDisabled={false}
+                  isDisabled={isDisabled}
                   onChange={value => setVotingPeriod(value)}
                   placeholder="0"
                   className="col-start-3"
@@ -194,6 +226,7 @@ export function AddDao() {
                   onChange={x => setUnitPeriod(x)}
                   options={timeUnitOptions}
                   value={unitPeriod}
+                  isDisabled={isDisabled}
                 />
               </FormField>
 
@@ -208,7 +241,7 @@ export function AddDao() {
               >
                 <InputNumber
                   value={votingDelay}
-                  isDisabled={false}
+                  isDisabled={isDisabled}
                   onChange={value => setVotingDelay(value)}
                   placeholder="0"
                   className="col-start-3"
@@ -217,6 +250,7 @@ export function AddDao() {
                   onChange={x => setUnitVotingDelay(x)}
                   options={timeUnitOptions}
                   value={unitVotingDelay}
+                  isDisabled={isDisabled}
                 />
               </FormField>
 
@@ -231,7 +265,7 @@ export function AddDao() {
               >
                 <InputNumber
                   value={executionDelay}
-                  isDisabled={false}
+                  isDisabled={isDisabled}
                   onChange={value => setExecutionDelay(value)}
                   placeholder="0"
                   className="col-start-3"
@@ -240,14 +274,31 @@ export function AddDao() {
                   onChange={x => setUnitExecution(x)}
                   options={timeUnitOptions}
                   value={unitExecution}
+                  isDisabled={isDisabled}
                 />
               </FormField>
               <TransactionOptions setOptions={setOptions}></TransactionOptions>
-              <Buttons>
-                <Button variant="primary" isDisabled={daoName.value === ''} onClick={createDAO}>
-                  Create DAO
-                </Button>
-              </Buttons>
+              {txState === 'fail' && (
+                <div className="flex">
+                  <ExclamationCircleIcon className="w-10 h-10 text-red-400 mb-3" />
+                  <p className="text-gray-500 mt-2 ml-2">
+                    DAO could not be deployed. Please check the transaction options and your account
+                    balance.
+                  </p>
+                </div>
+              )}
+              {txState !== 'wait' && (
+                <Buttons>
+                  <Button variant="primary" isDisabled={daoName.value === ''} onClick={createDAO}>
+                    Create DAO
+                  </Button>
+                </Buttons>
+              )}
+
+              <LoaderSmall
+                isLoading={txState === 'wait'}
+                message="Your DAO is being deployed."
+              ></LoaderSmall>
             </Form>
           </div>
         </div>

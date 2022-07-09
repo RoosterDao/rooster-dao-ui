@@ -1,6 +1,6 @@
 {
   "source": {
-    "hash": "0x01323262101692d3d98556dee1f4d6360579345d1d08f6daf970f09987cade1a",
+    "hash": "0xce447c188587a17a4c21eb300b344b824c6f6af9a70ee0b7a8539999f9594730",
     "language": "ink! 3.3.0",
     "compiler": "rustc 1.63.0-nightly"
   },
@@ -22,7 +22,7 @@
                 "displayName": [
                   "Option"
                 ],
-                "type": 33
+                "type": 37
               }
             },
             {
@@ -51,11 +51,20 @@
                 ],
                 "type": 12
               }
+            },
+            {
+              "label": "nft_price",
+              "type": {
+                "displayName": [
+                  "Balance"
+                ],
+                "type": 31
+              }
             }
           ],
           "docs": [],
           "label": "new",
-          "payable": false,
+          "payable": true,
           "selector": "0x9bae9d5e"
         }
       ],
@@ -93,7 +102,7 @@
                 "displayName": [
                   "Transaction"
                 ],
-                "type": 36
+                "type": 40
               }
             },
             {
@@ -165,7 +174,7 @@
                 "displayName": [
                   "VoteType"
                 ],
-                "type": 40
+                "type": 50
               }
             }
           ],
@@ -188,7 +197,7 @@
             {
               "docs": [],
               "indexed": false,
-              "label": "from_delegatee",
+              "label": "from_delegate",
               "type": {
                 "displayName": [
                   "AccountId"
@@ -199,7 +208,7 @@
             {
               "docs": [],
               "indexed": false,
-              "label": "to_delegatee",
+              "label": "to_delegate",
               "type": {
                 "displayName": [
                   "AccountId"
@@ -216,7 +225,7 @@
             {
               "docs": [],
               "indexed": true,
-              "label": "delegatee",
+              "label": "delegate",
               "type": {
                 "displayName": [
                   "AccountId"
@@ -238,6 +247,34 @@
           ],
           "docs": [],
           "label": "DelegateVotesChanged"
+        },
+        {
+          "args": [
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "collection_id",
+              "type": {
+                "displayName": [
+                  "CollectionId"
+                ],
+                "type": 1
+              }
+            },
+            {
+              "docs": [],
+              "indexed": false,
+              "label": "symbol",
+              "type": {
+                "displayName": [
+                  "String"
+                ],
+                "type": 17
+              }
+            }
+          ],
+          "docs": [],
+          "label": "CollectionCreated"
         }
       ],
       "messages": [
@@ -264,7 +301,8 @@
           ],
           "docs": [
             " Governor read functions",
-            ""
+            " ",
+            " returns whether account has voted for proposal_id "
           ],
           "label": "has_voted",
           "mutates": false,
@@ -287,7 +325,7 @@
             "displayName": [
               "Option"
             ],
-            "type": 33
+            "type": 37
           },
           "selector": "0x3adaf70d"
         },
@@ -357,7 +395,7 @@
           "payable": false,
           "returnType": {
             "displayName": [],
-            "type": 34
+            "type": 38
           },
           "selector": "0x4728f0e4"
         },
@@ -381,7 +419,7 @@
             "displayName": [
               "ProposalState"
             ],
-            "type": 35
+            "type": 39
           },
           "selector": "0x0ced162a"
         },
@@ -421,7 +459,7 @@
                 "displayName": [
                   "Transaction"
                 ],
-                "type": 36
+                "type": 40
               }
             },
             {
@@ -506,6 +544,75 @@
           "selector": "0x5f9d374c"
         },
         {
+          "args": [],
+          "docs": [],
+          "label": "get_nft_price",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Balance"
+            ],
+            "type": 31
+          },
+          "selector": "0x94cf9bf5"
+        },
+        {
+          "args": [
+            {
+              "label": "account",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 6
+              }
+            }
+          ],
+          "docs": [],
+          "label": "get_nft",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 43
+          },
+          "selector": "0x26443695"
+        },
+        {
+          "args": [],
+          "docs": [],
+          "label": "list_owners",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Vec"
+            ],
+            "type": 45
+          },
+          "selector": "0xa0caf77c"
+        },
+        {
+          "args": [],
+          "docs": [
+            " Governor write functions",
+            " "
+          ],
+          "label": "create_collection",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 47
+          },
+          "selector": "0x33324780"
+        },
+        {
           "args": [
             {
               "label": "proposal_id",
@@ -522,13 +629,11 @@
                 "displayName": [
                   "VoteType"
                 ],
-                "type": 40
+                "type": 50
               }
             }
           ],
-          "docs": [
-            " Governor write functions"
-          ],
+          "docs": [],
           "label": "cast_vote",
           "mutates": true,
           "payable": false,
@@ -536,7 +641,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 41
+            "type": 51
           },
           "selector": "0xcaed155c"
         },
@@ -560,7 +665,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 41
+            "type": 51
           },
           "selector": "0xd00ec894"
         },
@@ -572,7 +677,7 @@
                 "displayName": [
                   "Transaction"
                 ],
-                "type": 36
+                "type": 40
               }
             },
             {
@@ -593,14 +698,14 @@
             "displayName": [
               "Result"
             ],
-            "type": 43
+            "type": 52
           },
           "selector": "0xcb14b5b5"
         },
         {
           "args": [
             {
-              "label": "delegatee",
+              "label": "delegate",
               "type": {
                 "displayName": [
                   "AccountId"
@@ -617,9 +722,26 @@
             "displayName": [
               "Result"
             ],
-            "type": 41
+            "type": 51
           },
           "selector": "0xc59654fe"
+        },
+        {
+          "args": [],
+          "docs": [
+            " Governor payable functions",
+            " "
+          ],
+          "label": "become_member",
+          "mutates": true,
+          "payable": true,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 51
+          },
+          "selector": "0xe94fc5c9"
         }
       ]
     },
@@ -831,9 +953,71 @@
           },
           {
             "layout": {
+              "enum": {
+                "dispatchKey": "0x0500000000000000000000000000000000000000000000000000000000000000",
+                "variants": {
+                  "0": {
+                    "fields": [
+                      {
+                        "layout": {
+                          "cell": {
+                            "key": "0x0600000000000000000000000000000000000000000000000000000000000000",
+                            "ty": 1
+                          }
+                        },
+                        "name": null
+                      }
+                    ]
+                  },
+                  "1": {
+                    "fields": []
+                  }
+                }
+              }
+            },
+            "name": "collection_id"
+          },
+          {
+            "layout": {
               "cell": {
-                "key": "0x0500000000000000000000000000000000000000000000000000000000000000",
+                "key": "0x0600000000000000000000000000000000000000000000000000000000000000",
+                "ty": 25
+              }
+            },
+            "name": "owners"
+          },
+          {
+            "layout": {
+              "cell": {
+                "key": "0x0700000000000000000000000000000000000000000000000000000000000000",
                 "ty": 28
+              }
+            },
+            "name": "owners_nft"
+          },
+          {
+            "layout": {
+              "cell": {
+                "key": "0x0800000000000000000000000000000000000000000000000000000000000000",
+                "ty": 28
+              }
+            },
+            "name": "owners_lvl"
+          },
+          {
+            "layout": {
+              "cell": {
+                "key": "0x0900000000000000000000000000000000000000000000000000000000000000",
+                "ty": 31
+              }
+            },
+            "name": "price"
+          },
+          {
+            "layout": {
+              "cell": {
+                "key": "0x0a00000000000000000000000000000000000000000000000000000000000000",
+                "ty": 32
               }
             },
             "name": "delegations"
@@ -841,8 +1025,8 @@
           {
             "layout": {
               "cell": {
-                "key": "0x0600000000000000000000000000000000000000000000000000000000000000",
-                "ty": 32
+                "key": "0x0b00000000000000000000000000000000000000000000000000000000000000",
+                "ty": 36
               }
             },
             "name": "delegation_blocks"
@@ -1307,7 +1491,7 @@
             "composite": {
               "fields": [
                 {
-                  "type": 30
+                  "type": 29
                 }
               ]
             }
@@ -1315,11 +1499,11 @@
           "params": [
             {
               "name": "K",
-              "type": 1
+              "type": 6
             },
             {
               "name": "V",
-              "type": 29
+              "type": 1
             }
           ],
           "path": [
@@ -1334,6 +1518,65 @@
         "id": 29,
         "type": {
           "def": {
+            "sequence": {
+              "type": 30
+            }
+          }
+        }
+      },
+      {
+        "id": 30,
+        "type": {
+          "def": {
+            "tuple": [
+              6,
+              1
+            ]
+          }
+        }
+      },
+      {
+        "id": 31,
+        "type": {
+          "def": {
+            "primitive": "u128"
+          }
+        }
+      },
+      {
+        "id": 32,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "type": 34
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "K",
+              "type": 1
+            },
+            {
+              "name": "V",
+              "type": 33
+            }
+          ],
+          "path": [
+            "openbrush_lang",
+            "storage",
+            "mapping",
+            "Mapping"
+          ]
+        }
+      },
+      {
+        "id": 33,
+        "type": {
+          "def": {
             "tuple": [
               6,
               6
@@ -1342,28 +1585,28 @@
         }
       },
       {
-        "id": 30,
+        "id": 34,
         "type": {
           "def": {
             "sequence": {
-              "type": 31
+              "type": 35
             }
           }
         }
       },
       {
-        "id": 31,
+        "id": 35,
         "type": {
           "def": {
             "tuple": [
               1,
-              29
+              33
             ]
           }
         }
       },
       {
-        "id": 32,
+        "id": 36,
         "type": {
           "def": {
             "sequence": {
@@ -1373,7 +1616,7 @@
         }
       },
       {
-        "id": 33,
+        "id": 37,
         "type": {
           "def": {
             "variant": {
@@ -1406,7 +1649,7 @@
         }
       },
       {
-        "id": 34,
+        "id": 38,
         "type": {
           "def": {
             "tuple": [
@@ -1418,7 +1661,7 @@
         }
       },
       {
-        "id": 35,
+        "id": 39,
         "type": {
           "def": {
             "variant": {
@@ -1467,7 +1710,7 @@
         }
       },
       {
-        "id": 36,
+        "id": 40,
         "type": {
           "def": {
             "composite": {
@@ -1479,17 +1722,17 @@
                 },
                 {
                   "name": "selector",
-                  "type": 37,
+                  "type": 41,
                   "typeName": "[u8; 4]"
                 },
                 {
                   "name": "input",
-                  "type": 38,
+                  "type": 42,
                   "typeName": "Vec<u8>"
                 },
                 {
                   "name": "transferred_value",
-                  "type": 39,
+                  "type": 31,
                   "typeName": "Balance"
                 },
                 {
@@ -1509,7 +1752,7 @@
         }
       },
       {
-        "id": 37,
+        "id": 41,
         "type": {
           "def": {
             "array": {
@@ -1520,7 +1763,7 @@
         }
       },
       {
-        "id": 38,
+        "id": 42,
         "type": {
           "def": {
             "sequence": {
@@ -1530,44 +1773,7 @@
         }
       },
       {
-        "id": 39,
-        "type": {
-          "def": {
-            "primitive": "u128"
-          }
-        }
-      },
-      {
-        "id": 40,
-        "type": {
-          "def": {
-            "variant": {
-              "variants": [
-                {
-                  "index": 0,
-                  "name": "Against"
-                },
-                {
-                  "index": 1,
-                  "name": "For"
-                },
-                {
-                  "index": 2,
-                  "name": "Abstain"
-                }
-              ]
-            }
-          },
-          "path": [
-            "roosterdao",
-            "traits",
-            "governor",
-            "VoteType"
-          ]
-        }
-      },
-      {
-        "id": 41,
+        "id": 43,
         "type": {
           "def": {
             "variant": {
@@ -1575,7 +1781,7 @@
                 {
                   "fields": [
                     {
-                      "type": 9
+                      "type": 3
                     }
                   ],
                   "index": 0,
@@ -1584,7 +1790,7 @@
                 {
                   "fields": [
                     {
-                      "type": 42
+                      "type": 44
                     }
                   ],
                   "index": 1,
@@ -1596,11 +1802,11 @@
           "params": [
             {
               "name": "T",
-              "type": 9
+              "type": 3
             },
             {
               "name": "E",
-              "type": 42
+              "type": 44
             }
           ],
           "path": [
@@ -1609,7 +1815,7 @@
         }
       },
       {
-        "id": 42,
+        "id": 44,
         "type": {
           "def": {
             "variant": {
@@ -1641,6 +1847,18 @@
                 {
                   "index": 6,
                   "name": "NotOwner"
+                },
+                {
+                  "index": 7,
+                  "name": "InsufficientAmount"
+                },
+                {
+                  "index": 8,
+                  "name": "AlreadyOwner"
+                },
+                {
+                  "index": 9,
+                  "name": "MintFailed"
                 }
               ]
             }
@@ -1654,7 +1872,194 @@
         }
       },
       {
-        "id": 43,
+        "id": 45,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 46
+            }
+          }
+        }
+      },
+      {
+        "id": 46,
+        "type": {
+          "def": {
+            "tuple": [
+              6,
+              1,
+              1
+            ]
+          }
+        }
+      },
+      {
+        "id": 47,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "fields": [
+                    {
+                      "type": 9
+                    }
+                  ],
+                  "index": 0,
+                  "name": "Ok"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 48
+                    }
+                  ],
+                  "index": 1,
+                  "name": "Err"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "T",
+              "type": 9
+            },
+            {
+              "name": "E",
+              "type": 48
+            }
+          ],
+          "path": [
+            "Result"
+          ]
+        }
+      },
+      {
+        "id": 48,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "fields": [
+                    {
+                      "type": 49,
+                      "typeName": "RCErrorCode"
+                    }
+                  ],
+                  "index": 0,
+                  "name": "ErrorCode"
+                }
+              ]
+            }
+          },
+          "path": [
+            "governor_contract",
+            "RCError"
+          ]
+        }
+      },
+      {
+        "id": 49,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "index": 0,
+                  "name": "Failed"
+                },
+                {
+                  "index": 1,
+                  "name": "CollectionNotCreated"
+                },
+                {
+                  "index": 2,
+                  "name": "CollectionAlreadyCreated"
+                }
+              ]
+            }
+          },
+          "path": [
+            "governor_contract",
+            "RCErrorCode"
+          ]
+        }
+      },
+      {
+        "id": 50,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "index": 0,
+                  "name": "Against"
+                },
+                {
+                  "index": 1,
+                  "name": "For"
+                },
+                {
+                  "index": 2,
+                  "name": "Abstain"
+                }
+              ]
+            }
+          },
+          "path": [
+            "roosterdao",
+            "traits",
+            "governor",
+            "VoteType"
+          ]
+        }
+      },
+      {
+        "id": 51,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "fields": [
+                    {
+                      "type": 9
+                    }
+                  ],
+                  "index": 0,
+                  "name": "Ok"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 44
+                    }
+                  ],
+                  "index": 1,
+                  "name": "Err"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "T",
+              "type": 9
+            },
+            {
+              "name": "E",
+              "type": 44
+            }
+          ],
+          "path": [
+            "Result"
+          ]
+        }
+      },
+      {
+        "id": 52,
         "type": {
           "def": {
             "variant": {
@@ -1671,7 +2076,7 @@
                 {
                   "fields": [
                     {
-                      "type": 42
+                      "type": 44
                     }
                   ],
                   "index": 1,
@@ -1687,7 +2092,7 @@
             },
             {
               "name": "E",
-              "type": 42
+              "type": 44
             }
           ],
           "path": [

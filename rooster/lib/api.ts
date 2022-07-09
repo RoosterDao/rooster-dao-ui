@@ -63,17 +63,21 @@ export const instantiateDAO = ({
 
     tx.signAndSend(accountOrPair, { signer: undefined }, async result => {
       await result;
-      if (result.contract?.address) {
-        keyring.saveContract(result.contract.address, { name: args.name, abi });
-        const address = result.contract.address;
-        resolve({
-          address: address === 'string' ? address : address.toHuman(),
-          name: args.name,
-          votingDelay: args.votingDelay.toNumber(),
-          votingPeriod: args.votingPeriod.toNumber(),
-          executionDelay: args.executionDelay.toNumber(),
-          abi,
-        });
+      if (result.isCompleted) {
+        if (result.contract?.address) {
+          keyring.saveContract(result.contract.address, { name: args.name, abi });
+          const address = result.contract.address;
+          resolve({
+            address: address === 'string' ? address : address.toHuman(),
+            name: args.name,
+            votingDelay: args.votingDelay.toNumber(),
+            votingPeriod: args.votingPeriod.toNumber(),
+            executionDelay: args.executionDelay.toNumber(),
+            abi,
+          });
+        } else {
+          reject();
+        }
       }
     });
   });

@@ -6,6 +6,8 @@ import { AccountSelect } from '../../src/ui/components/account';
 import { useState } from 'react';
 import { useGlobalAccountId } from '../lib/hooks';
 
+export type TxState = 'idle' | 'wait' | 'fail' | 'success';
+
 export function Page({ children }): React.ReactElement {
   const [isOnChain, setIsOnChain] = useState(true);
   const { value: accountId, onChange: setAccountId, ...accountIdValidation } = useGlobalAccountId();
