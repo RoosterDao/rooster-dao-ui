@@ -1,8 +1,8 @@
 // rooster dao
 
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
 import { useAccountId, useLocalStorage } from '../../src/ui/hooks';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 const DAO_LOCAL_STORAGE = 'rooster_dao_daos';
 const PROPOSAL_LOCAL_STORAGE = 'rooster_dao_proposals';
@@ -67,7 +67,11 @@ export function useProposals() {
   };
 
   useEffect(() => {
-    proposalsSubject.subscribe(p => setProposals(p));
+    const sub = proposalsSubject.subscribe(p => setProposals(p));
+
+    return () => {
+      sub?.unsubscribe();
+    };
   }, []);
 
   return {
@@ -103,7 +107,11 @@ export function useDaos() {
   };
 
   useEffect(() => {
-    daosSubject.subscribe(daos => setDaosList(daos));
+    const sub = daosSubject.subscribe(daos => setDaosList(daos));
+
+    return () => {
+      sub?.unsubscribe();
+    };
   }, []);
 
   return { daosList, addDao, getDao, forgetDao, forgetAllDaos };
@@ -117,7 +125,11 @@ export const useGlobalAccountId = () => {
   };
 
   useLayoutEffect(() => {
-    accountSubject.subscribe(account => setAccountId(account));
+    const sub = accountSubject.subscribe(account => setAccountId(account));
+
+    return () => {
+      sub?.unsubscribe();
+    };
   }, []);
 
   return { value, onChange, ...accountIdValidation };
