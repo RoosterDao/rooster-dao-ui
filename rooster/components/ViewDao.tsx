@@ -7,11 +7,17 @@ import { truncate } from '../../src/ui/util';
 import { useDaos, useGlobalAccountId, useProposals } from '../lib/hooks';
 import { useNavigate, useParams } from 'react-router';
 import { Link } from 'react-router-dom';
-import { PlusSmIcon, TrashIcon, UserIcon, InformationCircleIcon } from '@heroicons/react/outline';
+import {
+  PlusSmIcon,
+  TrashIcon,
+  UserIcon,
+  InformationCircleIcon,
+  StarIcon,
+} from '@heroicons/react/outline';
 import { useHackedIndexer } from './HackedIndexerContext';
 import { DelegationModal } from './DelegationModal';
 import { useEffect, useReducer, useState } from 'react';
-import { useDelegate, useGetNft, useGetVotes, useProposalState } from '../lib/api';
+import { useGetNft, useGetVotes, useProposalState } from '../lib/api';
 import ReactTooltip from 'react-tooltip';
 import {
   firstCellBody,
@@ -23,8 +29,12 @@ import {
 } from './Table';
 import { useApi } from '../../src/ui/contexts';
 import { BecomeMemberModal } from './BecomeMemberModal';
+import { fetchRooster } from '../lib/ipfs-api';
+import { useRmrkCoreResources } from '../lib/runtime-api';
+import { EvolutionModal } from './EvolutionModal';
 
 const SHORT_DESCRIPTION_LENGTH = 200;
+const getCID = cid => cid?.replace('ipfs://ipfs/', '') ?? null;
 
 export function ViewDao() {
   const { address } = useParams();
@@ -33,8 +43,13 @@ export function ViewDao() {
   const { keyring } = useApi();
   const [delegationModalOpen, openDelegationModal] = useState(false);
   const [becomeMemberModalOpen, openBecomeMemberModal] = useState(false);
+  const [evolutionModalOpen, openEvolutionModal] = useState(false);
   const [votes, setVotes] = useState(0);
-  const [isMember, setIsMember] = useState(false);
+  const [nft, setNft] = useState(false);
+  const [rooster, setRooster] = useState('');
+  const [availableEvolution, setAvailableEvolution] = useState({} as any);
+  const [memberMessage, setMemberMessage] = useState('');
+
   const [proposalStates, setProposalStates] = useReducer((state, { id, value }) => {
     return { ...state, [id]: value };
   }, {} as Record<string, string | null>);
@@ -51,9 +66,12 @@ export function ViewDao() {
 
   const { queryGetVotes } = useGetVotes(address);
   const { queryGetNft } = useGetNft(address);
+  const { queryResources, queryNextResourceId } = useRmrkCoreResources();
 
   const { queryState, queryProposalVotes } = useProposalState(address);
   const { value: accountId } = useGlobalAccountId();
+
+  const isMember = nft?.Err !== 'NotOwner';
 
   useEffect(() => {
     proposals.map(proposal => {
@@ -62,20 +80,66 @@ export function ViewDao() {
     });
   }, [JSON.stringify(proposals), address]);
 
-  useEffect(() => {
+  const getDelegateVotes = () => {
     queryGetVotes().then(votes => setVotes(votes));
-    queryGetNft().then(result => {
-      setIsMember(result?.Err !== 'NotOwner');
-    });
-  }, [accountId, address]);
+  };
 
-  const delegateVote = () => {
-    queryGetVotes().then(votes => setVotes(votes));
+  const checkForEvolutions = async ([collectionId, nftId]) => {
+    const resource = await queryNextResourceId(collectionId, nftId);
+
+    console.log('test', resource);
+    if (resource.currentNft) {
+      const currentCId = getCID(resource?.currentNft?.resource?.Basic?.metadata ?? null);
+      const nextCId = getCID(resource?.nextNft?.resource?.Basic?.metadata ?? null);
+
+      if (resource.nextNft) {
+        fetchRooster(currentCId).then(setRooster);
+
+        if (resource.nextNft.pending) {
+          setAvailableEvolution({
+            resourceId: resource.nextNft.id,
+            currentCId,
+            nextCId,
+            collectionId,
+            nftId,
+          });
+        }
+      } else {
+        if (resource.currentNft.pending) {
+          setMemberMessage('Get your first evolution!');
+          setAvailableEvolution({
+            resourceId: resource.currentNft.id,
+            currentCId,
+            nextCId,
+            collectionId,
+            nftId,
+          });
+        } else {
+          fetchRooster(currentCId).then(setRooster);
+          setAvailableEvolution({});
+        }
+      }
+    } else {
+      setMemberMessage(
+        'Congratulations, your are part of this DAO now! Vote on a proposal to receive the first evolution of your NFT.'
+      );
+    }
   };
 
   const getNft = () => {
-    queryGetNft().then(result => setIsMember(result?.Err !== 'NotOwner'));
+    queryGetNft().then(async result => {
+      setNft(result);
+
+      if (result?.Ok) {
+        checkForEvolutions(result.Ok);
+      }
+    });
   };
+
+  useEffect(() => {
+    getDelegateVotes();
+    getNft();
+  }, [accountId, address]);
 
   const forget = () => {
     forgetDao(dao);
@@ -84,83 +148,117 @@ export function ViewDao() {
 
   return (
     <Page>
-      <h2 className="inline pr-8 text-xl font-semibold dark:text-white text-gray-700 capitalize">
-        {dao?.name}
-      </h2>
-      <div className="inline mt-4 dark:text-gray-400 text-gray-500 text-sm">
-        <div className="inline-flex items-center">
-          <span className="inline-block relative bg-blue-500 text-blue-400 bg-opacity-20 text-xs px-1.5 py-1 font-mono rounded">
-            {truncate(address, 4)}
-          </span>
-          <CopyButton className="ml-1" value={address} />
+      <div className="grid grid-cols-6">
+        <div className="col-span-3">
+          <h2 className="inline pr-8 text-xl font-semibold dark:text-white text-gray-700 capitalize">
+            {dao?.name}
+          </h2>
+          <div className="inline mt-4 dark:text-gray-400 text-gray-500 text-sm">
+            <div className="inline-flex items-center">
+              <span className="inline-block relative bg-blue-500 text-blue-400 bg-opacity-20 text-xs px-1.5 py-1 font-mono rounded">
+                {truncate(address, 4)}
+              </span>
+              <CopyButton className="ml-1" value={address} />
+            </div>
+          </div>
+          <div>
+            {!isMember && (
+              <a
+                onClick={() => openBecomeMemberModal(true)}
+                className="inline-flex mt-12 w-max justify-between items-center px-6 py-4 border text-gray-500 dark:border-gray-700 border-gray-200 rounded-md dark:bg-elevation-1 dark:hover:bg-elevation-2 hover:bg-gray-100 cursor-pointer"
+              >
+                <div className="flex items-center text-base dark:text-gray-300 text-gray-500 space-x-2">
+                  <UserIcon className="h-8 w-8 dark:text-gray-500 text-gray-400 group-hover:text-gray-500" />
+                  <span>Become member</span>
+                </div>
+              </a>
+            )}
+            {!isMember && (
+              <>
+                <InformationCircleIcon
+                  className="inline cursor-help ml-1.5 pt-4 w-8 h-8 dark:text-gray-500"
+                  data-tip
+                  data-for={`formFieldHelp-delegation`}
+                />
+                <ReactTooltip id={`formFieldHelp-delegation`}>
+                  Get the NFT to become part of this DAO.
+                </ReactTooltip>
+              </>
+            )}
+            {votes !== 0 && isMember && (
+              <Link
+                to={`/dao/${address}/proposal/new`}
+                className="inline-flex mt-12 mr-6 w-max justify-between items-center px-6 py-4 border text-gray-500 dark:border-gray-700 border-gray-200 rounded-md dark:bg-elevation-1 dark:hover:bg-elevation-2 hover:bg-gray-100"
+              >
+                <div className="flex items-center text-base dark:text-gray-300 text-gray-500 space-x-2">
+                  <PlusSmIcon className="h-8 w-8 dark:text-gray-500 text-gray-400 group-hover:text-gray-500" />
+                  <span>Create new proposal</span>
+                </div>
+              </Link>
+            )}
+            {isMember && (
+              <a
+                onClick={() => openDelegationModal(true)}
+                className="inline-flex mt-12 w-max justify-between items-center px-6 py-4 border text-gray-500 dark:border-gray-700 border-gray-200 rounded-md dark:bg-elevation-1 dark:hover:bg-elevation-2 hover:bg-gray-100 cursor-pointer"
+              >
+                <div className="flex items-center text-base dark:text-gray-300 text-gray-500 space-x-2">
+                  <UserIcon className="h-8 w-8 dark:text-gray-500 text-gray-400 group-hover:text-gray-500" />
+                  <span>Delegate vote</span>
+                </div>
+              </a>
+            )}
+            {votes === 0 && isMember && (
+              <>
+                <InformationCircleIcon
+                  className="inline cursor-help ml-1.5 pt-4 w-8 h-8 dark:text-gray-500"
+                  data-tip
+                  data-for={`formFieldHelp-delegation`}
+                />
+                <ReactTooltip id={`formFieldHelp-delegation`}>
+                  You don't have enough voting power yet to vote on proposals or to create new
+                  proposals. Start with delegating your vote to yourself.
+                </ReactTooltip>
+              </>
+            )}
+          </div>
+
+          {isMember && (
+            <div className="mt-14">
+              <div className="inline-flex items-center text-base dark:text-gray-300 text-gray-500 space-x-2">
+                <StarIcon className="h-8 w-8 dark:text-gray-500 text-gray-400 group-hover:text-gray-500" />
+                <span>{rooster.description ?? memberMessage}</span>
+              </div>
+              {availableEvolution.resourceId && (
+                <a
+                  onClick={() => openEvolutionModal(true)}
+                  className="inline-flex ml-8 w-max justify-between items-center px-6 py-4 border text-gray-500 dark:border-gray-700 border-gray-200 rounded-md dark:bg-elevation-1 dark:hover:bg-elevation-2 hover:bg-gray-100 cursor-pointer"
+                >
+                  <div className="flex items-center text-base dark:text-gray-300 text-gray-500 space-x-2">
+                    <UserIcon className="h-8 w-8 dark:text-gray-500 text-gray-400 group-hover:text-gray-500" />
+                    <span>See available evolution</span>
+                  </div>
+                </a>
+              )}
+            </div>
+          )}
         </div>
-      </div>
-      <Button
-        className="float-right border-2 dark:border-gray-700 border-gray-200"
-        onClick={forget}
-      >
-        <TrashIcon className="w-4 dark:text-gray-500 mr-1 justify-self-end" />
-        Forget DAO
-      </Button>
-      <div>
-        {!isMember && (
-          <a
-            onClick={() => openBecomeMemberModal(true)}
-            className="inline-flex mt-12 w-max justify-between items-center px-6 py-4 border text-gray-500 dark:border-gray-700 border-gray-200 rounded-md dark:bg-elevation-1 dark:hover:bg-elevation-2 hover:bg-gray-100 cursor-pointer"
+
+        {rooster.imageUrl ? (
+          <div className="w-60 col-span-2 justify-self-center collapsible-panel">
+            <img className="p-5 max-w-full max-h-full" src={rooster.imageUrl}></img>
+          </div>
+        ) : (
+          <div className="col-span-2"></div>
+        )}
+        <div>
+          <Button
+            className="float-right border-2 dark:border-gray-700 border-gray-200"
+            onClick={forget}
           >
-            <div className="flex items-center text-base dark:text-gray-300 text-gray-500 space-x-2">
-              <UserIcon className="h-8 w-8 dark:text-gray-500 text-gray-400 group-hover:text-gray-500" />
-              <span>Become member</span>
-            </div>
-          </a>
-        )}
-        {!isMember && (
-          <>
-            <InformationCircleIcon
-              className="inline cursor-help ml-1.5 pt-4 w-8 h-8 dark:text-gray-500"
-              data-tip
-              data-for={`formFieldHelp-delegation`}
-            />
-            <ReactTooltip id={`formFieldHelp-delegation`}>
-              Get the NFT to become part of this DAO.
-            </ReactTooltip>
-          </>
-        )}
-        {votes !== 0 && isMember && (
-          <Link
-            to={`/dao/${address}/proposal/new`}
-            className="inline-flex mt-12 mr-6 w-max justify-between items-center px-6 py-4 border text-gray-500 dark:border-gray-700 border-gray-200 rounded-md dark:bg-elevation-1 dark:hover:bg-elevation-2 hover:bg-gray-100"
-          >
-            <div className="flex items-center text-base dark:text-gray-300 text-gray-500 space-x-2">
-              <PlusSmIcon className="h-8 w-8 dark:text-gray-500 text-gray-400 group-hover:text-gray-500" />
-              <span>Create new proposal</span>
-            </div>
-          </Link>
-        )}
-        {isMember && (
-          <a
-            onClick={() => openDelegationModal(true)}
-            className="inline-flex mt-12 w-max justify-between items-center px-6 py-4 border text-gray-500 dark:border-gray-700 border-gray-200 rounded-md dark:bg-elevation-1 dark:hover:bg-elevation-2 hover:bg-gray-100 cursor-pointer"
-          >
-            <div className="flex items-center text-base dark:text-gray-300 text-gray-500 space-x-2">
-              <UserIcon className="h-8 w-8 dark:text-gray-500 text-gray-400 group-hover:text-gray-500" />
-              <span>Delegate vote</span>
-            </div>
-          </a>
-        )}
-        {votes === 0 && isMember && (
-          <>
-            <InformationCircleIcon
-              className="inline cursor-help ml-1.5 pt-4 w-8 h-8 dark:text-gray-500"
-              data-tip
-              data-for={`formFieldHelp-delegation`}
-            />
-            <ReactTooltip id={`formFieldHelp-delegation`}>
-              You don't have enough voting power yet to vote on proposals or to create new
-              proposals. Start with delegating your vote to yourself.
-            </ReactTooltip>
-          </>
-        )}
+            <TrashIcon className="w-4 dark:text-gray-500 mr-1 justify-self-end" />
+            Forget DAO
+          </Button>
+        </div>
       </div>
 
       <h2 className="mt-12 mb-3 text-xl font-semibold dark:text-white text-gray-700">Proposals</h2>
@@ -248,7 +346,7 @@ export function ViewDao() {
         <DelegationModal
           setIsOpen={openDelegationModal}
           isOpen={delegationModalOpen}
-          onSuccess={delegateVote}
+          onSuccess={getDelegateVotes}
           dao={address}
         />
       )}
@@ -258,6 +356,15 @@ export function ViewDao() {
           setIsOpen={openBecomeMemberModal}
           isOpen={becomeMemberModalOpen}
           onSuccess={getNft}
+        />
+      )}
+      {evolutionModalOpen && (
+        <EvolutionModal
+          dao={address}
+          availableEvolution={availableEvolution}
+          setIsOpen={openEvolutionModal}
+          isOpen={evolutionModalOpen}
+          onEvolve={checkForEvolutions}
         />
       )}
     </Page>

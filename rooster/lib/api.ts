@@ -10,15 +10,8 @@ import {
 } from '../../src/types';
 import { BN } from '@polkadot/util';
 
-import {
-  createInstantiateTx,
-  maximumBlockWeight,
-  prepareContractTx,
-  toBalance,
-  transformUserInput,
-} from '../../src/api';
+import { createInstantiateTx, prepareContractTx, transformUserInput } from '../../src/api';
 import abiJSON from '../lib/metadata.json';
-import { keyring } from '@polkadot/ui-keyring';
 import { useApi } from '../../src/ui/contexts';
 import { useGlobalAccountId } from './hooks';
 import { Balance } from '@polkadot/types/interfaces';

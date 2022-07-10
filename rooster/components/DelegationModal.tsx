@@ -52,7 +52,7 @@ export const DelegationModal = ({ isOpen, setIsOpen, onSuccess, dao }: Omit<Prop
               onClick={async () => {
                 try {
                   setTxState('wait');
-                  setDeploymentMessage('The delegation is being processed');
+                  setDeploymentMessage('The delegation is being processed.');
                   await delegate(accountId, options);
                   onSuccess();
                   setIsOpen(false);
