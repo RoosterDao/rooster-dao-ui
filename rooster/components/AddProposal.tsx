@@ -1,23 +1,23 @@
 // Add Proposal Form
 
-import { Button, Buttons } from '../../src/ui/components/common';
+import { Button, Buttons, LoaderSmall } from '../../src/ui/components/common';
 import { ErrorBoundary } from './ErrorBoundary';
 import { Form, FormField } from '../../src/ui/components/form';
 import { propose } from '../lib/api';
-import { Page } from './Page';
+import { Page, TxState } from './Page';
 import { useApi } from '../../src/ui/contexts';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useDaos, useGlobalAccountId, useProposals } from '../lib/hooks';
 import { TransactionOptions } from './TransactionOptions';
 import { Link } from 'react-router-dom';
-import { ArrowCircleLeftIcon } from '@heroicons/react/outline';
+import { ArrowCircleLeftIcon, ExclamationCircleIcon } from '@heroicons/react/outline';
 
 export function AddProposal() {
   const { address } = useParams();
   if (!address) throw new Error('No address in url');
 
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState('My new proposal');
   const [options, setOptions] = useState({
     gasLimit: null,
     storageDepositLimit: null,
@@ -31,7 +31,12 @@ export function AddProposal() {
   const dao = getDao(address);
   const { addProposal } = useProposals();
 
+  const [deploymentMessage, setDeploymentMessage] = useState('');
+  const [txState, setTxState] = useState<TxState>('idle');
+
   const createProposal = async () => {
+    setDeploymentMessage('Your proposal is being created.');
+    setTxState('wait');
     const proposal = await propose({
       api,
       callee: accountId,
@@ -85,6 +90,7 @@ export function AddProposal() {
                   value={description || ''}
                   className="w-full dark:bg-gray-900 dark:text-gray-300 bg-white dark:border-gray-700 border-gray-200 rounded text-sm"
                   placeholder={'My proposal'}
+                  disabled={txState === 'wait'}
                 />
               </FormField>
 
@@ -99,11 +105,23 @@ export function AddProposal() {
 
               <TransactionOptions setOptions={setOptions} mutating={true}></TransactionOptions>
 
-              <Buttons>
-                <Button variant="primary" isDisabled={false} onClick={createProposal}>
-                  Create Proposal
-                </Button>
-              </Buttons>
+              {txState === 'fail' && (
+                <div className="flex">
+                  <ExclamationCircleIcon className="w-10 h-10 text-red-400 mb-3" />
+                  <p className="text-gray-500 mt-2 ml-2">
+                    Proposal could not be created. Please check the transaction options and your
+                    account balance.
+                  </p>
+                </div>
+              )}
+              {txState !== 'wait' && (
+                <Buttons>
+                  <Button variant="primary" isDisabled={false} onClick={createProposal}>
+                    Create Proposal
+                  </Button>
+                </Buttons>
+              )}
+              <LoaderSmall isLoading={txState === 'wait'} message={deploymentMessage}></LoaderSmall>
             </Form>
           </div>
         </div>

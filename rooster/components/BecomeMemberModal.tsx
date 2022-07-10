@@ -1,49 +1,43 @@
 /** @format */
 import { ModalBase as Modal, ModalProps } from '../../src/ui/components/modal/ModalBase';
-import { Form, FormField } from '../../src/ui/components/form';
-import { useAccountId } from '../../src/ui/hooks';
-import { AccountSelect } from '../../src/ui/components/account';
+import { Form } from '../../src/ui/components/form';
+import { useBalance } from '../../src/ui/hooks';
 import { Button, Buttons, LoaderSmall } from '../../src/ui/components';
 import { TransactionOptions } from './TransactionOptions';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useBecomeMember, useGetNftPrice } from '../lib/api';
+import { formatBalance } from '@polkadot/util';
 import { TxState } from './Page';
 import { ExclamationCircleIcon } from '@heroicons/react/outline';
-import { useDelegate } from '../lib/api';
 
 interface Props extends ModalProps {
   onSuccess: () => any;
   dao: string;
 }
 
-export const DelegationModal = ({ isOpen, setIsOpen, onSuccess, dao }: Omit<Props, 'title'>) => {
-  const { value: accountId, onChange: setAccountId, ...accountIdValidation } = useAccountId();
-  const [options, setOptions] = useState({
-    gasLimit: null,
-    storageDepositLimit: null,
-    value: null,
-  });
+export const BecomeMemberModal = ({ isOpen, setIsOpen, dao, onSuccess }: Omit<Props, 'title'>) => {
+  const { becomeMember } = useBecomeMember();
+  const { queryGetNftPrice } = useGetNftPrice(dao);
+  const { value: nftPrice, onChange: setNftPrice } = useBalance(0);
   const [txState, setTxState] = useState<TxState>('idle');
   const [deploymentMessage, setDeploymentMessage] = useState('');
-  const { delegate } = useDelegate(dao);
+
+  useEffect(() => {
+    queryGetNftPrice().then(setNftPrice);
+  }, []);
+
+  const [options, setOptions] = useState({
+    gasLimit: 0,
+    storageDepositLimit: null,
+    value: 0,
+  });
   return (
-    <Modal isOpen={isOpen} setIsOpen={setIsOpen} title="Delegate vote">
+    <Modal isOpen={isOpen} setIsOpen={setIsOpen} title="Become a member">
       <Form>
-        <FormField
-          className="mt-4"
-          help=""
-          id="labelDelegation"
-          label="Delegate your voting power to yourself or another account:"
-          isError={false}
-          {...accountIdValidation}
-        >
-          <AccountSelect
-            isDisabled={false}
-            id="accountId"
-            value={accountId}
-            onChange={setAccountId}
-            {...accountIdValidation}
-          />
-        </FormField>
+        <label className="block mt-8 mb-8 text-xl dark:text-white text-gray-600">
+          Get the NFT for <strong className="text-gray-800">{formatBalance(nftPrice)}</strong> to
+          become a member of the DAO.
+        </label>
         <TransactionOptions setOptions={setOptions} mutating={true}></TransactionOptions>
         {txState !== 'wait' && (
           <Buttons>
@@ -52,8 +46,8 @@ export const DelegationModal = ({ isOpen, setIsOpen, onSuccess, dao }: Omit<Prop
               onClick={async () => {
                 try {
                   setTxState('wait');
-                  setDeploymentMessage('The delegation is being processed');
-                  await delegate(accountId, options);
+                  setDeploymentMessage('Your NFT is being minted');
+                  await becomeMember(dao, options, nftPrice);
                   onSuccess();
                   setIsOpen(false);
                 } catch (e) {
@@ -61,7 +55,7 @@ export const DelegationModal = ({ isOpen, setIsOpen, onSuccess, dao }: Omit<Prop
                 }
               }}
             >
-              Delegate
+              Get NFT and become Member
             </Button>
           </Buttons>
         )}

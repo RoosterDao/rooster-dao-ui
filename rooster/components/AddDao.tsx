@@ -13,10 +13,10 @@ import {
   getValidation,
   InputBalance,
 } from '../../src/ui/components/form';
-import { instantiateDAO } from '../lib/api';
+import { useBecomeMember, useInstantiateDao } from '../lib/api';
 import { Page, TxState } from './Page';
 import { useApi } from '../../src/ui/contexts';
-import { useAccountId, useBalance, useFormField } from '../../src/ui/hooks';
+import { useBalance, useFormField } from '../../src/ui/hooks';
 import { useEffect, useState } from 'react';
 import BN from 'bn.js';
 import { useNavigate } from 'react-router';
@@ -76,24 +76,27 @@ const resolveUnit = (value: BNType, unit) => {
 export function AddDao() {
   const [template, setTemplate] = useState(templateOptions[0].value);
   const { addDao } = useDaos();
+  const { instantiateDAO, createCollection } = useInstantiateDao();
+  const { becomeMember } = useBecomeMember();
   const [codeHash, setCodeHash] = useState('');
-  const [votingDelay, setVotingDelay] = useState(new BN(1));
-  const [unitVotingDelay, setUnitVotingDelay] = useState(units.hours);
+  const [votingDelay, setVotingDelay] = useState(new BN(10));
+  const [unitVotingDelay, setUnitVotingDelay] = useState(units.seconds);
   const [votingPeriod, setVotingPeriod] = useState(new BN(1));
   const [unitPeriod, setUnitPeriod] = useState(units.hours);
   const [executionDelay, setExecutionDelay] = useState(new BN(1));
   const [unitExecution, setUnitExecution] = useState(units.hours);
   const [isOnChain, setIsOnChain] = useState(true);
   const [options, setOptions] = useState({
-    gasLimit: null,
+    gasLimit: 0,
     storageDepositLimit: null,
-    value: null,
+    value: 0,
   });
-
-  const { api, keyring } = useApi();
-  const navigate = useNavigate();
-  const { value: accountId, onChange: setAccountId, ...accountIdValidation } = useAccountId();
+  const [deploymentMessage, setDeploymentMessage] = useState('');
   const [txState, setTxState] = useState<TxState>('idle');
+
+  const { api } = useApi();
+  const navigate = useNavigate();
+
   const isDisabled = txState === 'wait';
   const { value: nftValue, onChange: setNftValue, ...valueValidation } = useBalance(100);
 
@@ -114,19 +117,21 @@ export function AddDao() {
       votingDelay: resolveUnit(votingDelay, unitVotingDelay),
       votingPeriod: resolveUnit(votingPeriod, unitPeriod),
       executionDelay: resolveUnit(executionDelay, unitExecution),
+      nftPrice: nftValue,
     };
     try {
-      options.value = nftValue;
       setTxState('wait');
+      setDeploymentMessage('Your DAO is being deployed.');
       const contract = await instantiateDAO({
-        api,
-        accountOrPair: keyring.getPair(accountId),
-        accountId,
         codeHash: template === 'rooster' ? governorCodeHash : codeHash,
         args,
-        options,
+        options: Object.assign({}, options, {value: nftValue}), //if value is too low createCollection does not work?
       });
       addDao(contract);
+      setDeploymentMessage('The NFT collection is being created.');
+      await createCollection(contract.address, options);
+      setDeploymentMessage('Your membership NFT is being minted.');
+      await becomeMember(contract.address, options, nftValue);
       navigate(`/dao/${contract.address}`);
     } catch (e) {
       setTxState('fail');
@@ -290,15 +295,12 @@ export function AddDao() {
               {txState !== 'wait' && (
                 <Buttons>
                   <Button variant="primary" isDisabled={daoName.value === ''} onClick={createDAO}>
-                    Create DAO
+                    Create DAO and become member
                   </Button>
                 </Buttons>
               )}
 
-              <LoaderSmall
-                isLoading={txState === 'wait'}
-                message="Your DAO is being deployed."
-              ></LoaderSmall>
+              <LoaderSmall isLoading={txState === 'wait'} message={deploymentMessage}></LoaderSmall>
             </Form>
           </div>
         </div>

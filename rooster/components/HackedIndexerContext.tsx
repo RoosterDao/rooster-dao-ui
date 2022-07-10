@@ -126,7 +126,7 @@ export const IndexerContextProvider = ({ children }: React.PropsWithChildren<Par
 
   useEffect(() => {
     if (api) {
-      getChainData();
+      //getChainData();
     }
   }, [api]);
 

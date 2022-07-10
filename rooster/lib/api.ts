@@ -1,86 +1,131 @@
 // api functions
 
 import { randomAsHex } from '@polkadot/util-crypto';
-import { Abi, BN as BNType, ContractPromise as Contract } from '../../src/types';
+import {
+  Abi,
+  BN as BNType,
+  ContractPromise as Contract,
+  ContractOptions,
+  UseBalance,
+} from '../../src/types';
 import { BN } from '@polkadot/util';
 
 import {
   createInstantiateTx,
   maximumBlockWeight,
   prepareContractTx,
+  toBalance,
   transformUserInput,
 } from '../../src/api';
 import abiJSON from '../lib/metadata.json';
 import { keyring } from '@polkadot/ui-keyring';
 import { useApi } from '../../src/ui/contexts';
 import { useGlobalAccountId } from './hooks';
+import { Balance } from '@polkadot/types/interfaces';
 
 const abi = new Abi(abiJSON);
 const defaultGasLimit = new BN('100000000000'); //TODO: check best way to determine gas limit
 
-interface options {
-  gasLimit: BN | null;
-  storageDepositLimit: BN | null | undefined;
-  value: BN | null | undefined;
-}
+type options = ContractOptions;
 
 interface instantiationArgs {
   name: string;
   votingPeriod: BNType;
   votingDelay: BNType;
   executionDelay: BNType;
+  nftPrice: Balance;
 }
 
-export const instantiateDAO = ({
-  api,
-  accountOrPair,
-  accountId,
-  codeHash,
-  args,
-  options,
-}: {
-  api;
-  accountOrPair;
-  accountId;
-  codeHash;
-  args: instantiationArgs;
-  options: options;
-}) =>
-  new Promise<any>((resolve, reject) => {
-    const params = {
-      codeHash,
-      metadata: abi,
-      origin: accountId,
-      weight: options.gasLimit || defaultGasLimit,
-      storageDepositLimit: options.storageDepositLimit,
-      argValues: args,
-      salt: randomAsHex(),
-      constructorIndex: 0,
-      value: options.value,
-    };
+export const useInstantiateDao = () => {
+  const { api, keyring } = useApi();
+  const { value: accountId } = useGlobalAccountId();
+  const accountOrPair = keyring.getPair(accountId);
 
-    const tx = createInstantiateTx(api, params);
+  const instantiateDAO = ({
+    codeHash,
+    args,
+    options,
+  }: {
+    codeHash: string;
+    args: instantiationArgs;
+    options: options;
+  }) =>
+    new Promise<any>((resolve, reject) => {
+      const params = {
+        codeHash,
+        metadata: abi,
+        origin: accountId,
+        weight: options.gasLimit || defaultGasLimit,
+        storageDepositLimit: options.storageDepositLimit,
+        argValues: args,
+        salt: randomAsHex(),
+        constructorIndex: 0,
+        value: options.value,
+      };
 
-    tx.signAndSend(accountOrPair, { signer: undefined }, async result => {
-      await result;
-      if (result.isCompleted) {
-        if (result.contract?.address) {
-          keyring.saveContract(result.contract.address, { name: args.name, abi });
-          const address = result.contract.address;
-          resolve({
-            address: address === 'string' ? address : address.toHuman(),
-            name: args.name,
-            votingDelay: args.votingDelay.toNumber(),
-            votingPeriod: args.votingPeriod.toNumber(),
-            executionDelay: args.executionDelay.toNumber(),
-            abi,
-          });
-        } else {
-          reject();
+      const tx = createInstantiateTx(api, params);
+
+      tx.signAndSend(accountOrPair, { signer: undefined }, async result => {
+        await result;
+        if (result.isCompleted) {
+          if (result.contract?.address) {
+            keyring.saveContract(result.contract.address, { name: args.name, abi });
+            const address = result.contract.address;
+            resolve({
+              address: address === 'string' ? address : address.toHuman(),
+              name: args.name,
+              votingDelay: args.votingDelay.toNumber(),
+              votingPeriod: args.votingPeriod.toNumber(),
+              executionDelay: args.executionDelay.toNumber(),
+              abi,
+            });
+          } else {
+            reject();
+          }
         }
-      }
+      });
     });
-  });
+
+  const createCollection = (dao: string, options: options) =>
+    new Promise<any>((resolve, reject) => {
+      const contract = new Contract(api, abi, dao);
+      contract.tx
+        .createCollection(options)
+        .signAndSend(accountOrPair, { signer: undefined }, async result => {
+          await result;
+          if (result.isCompleted) {
+            resolve(true);
+          } else if (result.isError) {
+            reject();
+          }
+        });
+    });
+
+  return { instantiateDAO, createCollection };
+};
+
+export const useBecomeMember = () => {
+  const { api, keyring } = useApi();
+  const { value: accountId } = useGlobalAccountId();
+  const accountOrPair = keyring.getPair(accountId);
+
+  const becomeMember = (dao: string, options: options, nftValue: UseBalance) =>
+    new Promise<any>((resolve, reject) => {
+      const contract = new Contract(api, abi, dao);
+      contract.tx
+        .becomeMember(Object.assign({}, options, { value: nftValue }))
+        .signAndSend(accountOrPair, { signer: undefined }, async result => {
+          await result;
+          if (result.isCompleted) {
+            resolve(true);
+          } else if (result.isError) {
+            reject();
+          }
+        });
+    });
+
+  return { becomeMember };
+};
 
 export const propose = ({
   api,
@@ -140,7 +185,7 @@ export function useDelegate(dao) {
       const message = abi.findMessage('delegate');
       const contract = new Contract(api, abi, dao);
       const transformed = transformUserInput(contract.registry, message.args, {
-        delegatee: accountId,
+        delegate: accountId,
       });
       if (!options.gasLimit) {
         options.gasLimit = defaultGasLimit;
@@ -155,6 +200,40 @@ export function useDelegate(dao) {
     });
 
   return { delegate };
+}
+
+export function useGetNftPrice(dao: string) {
+  const { api } = useApi();
+  const { value: caller } = useGlobalAccountId();
+
+  const queryGetNftPrice = async (): Promise<any | null> => {
+    const contract = new Contract(api, abi, dao);
+    const result = await contract.query.getNftPrice(caller, {});
+    if (result.result.isOk) {
+      return result?.output || null;
+    } else {
+      return null;
+    }
+  };
+
+  return { queryGetNftPrice };
+}
+
+export function useGetNft(dao: string) {
+  const { api } = useApi();
+  const { value: caller } = useGlobalAccountId();
+
+  const queryGetNft = async (accountId = caller): Promise<String | null> => {
+    const contract = new Contract(api, abi, dao);
+    const result = await contract.query.getNft(accountId, {}, accountId);
+    if (result.result.isOk) {
+      return result.output?.toHuman() as String | null;
+    } else {
+      return null;
+    }
+  };
+
+  return { queryGetNft };
 }
 
 export function useCastVote(dao) {
@@ -190,7 +269,7 @@ export function useHasVoted(dao) {
 
   const queryHasVoted = async (proposalId, accountId = caller): Promise<Boolean | null> => {
     const contract = new Contract(api, abi, dao);
-    const result = await contract.query.hasVoted(accountId, {}, proposalId, accountId);
+    const result = await contract.query.hasVoted(caller, {}, proposalId, accountId);
     if (result.result.isOk) {
       return result.output?.toHuman() as Boolean | null;
     } else {
@@ -207,7 +286,7 @@ export function useGetVotes(dao) {
 
   const queryGetVotes = async (accountId = caller): Promise<number | null> => {
     const contract = new Contract(api, abi, dao);
-    const result = await contract.query.getVotes(accountId, {}, accountId);
+    const result = await contract.query.getVotes(caller, {}, accountId);
     if (result.result.isOk) {
       return result.output?.toNumber() as number | null;
     } else {

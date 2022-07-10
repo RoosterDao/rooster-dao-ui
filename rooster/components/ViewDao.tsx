@@ -11,7 +11,7 @@ import { PlusSmIcon, TrashIcon, UserIcon, InformationCircleIcon } from '@heroico
 import { useHackedIndexer } from './HackedIndexerContext';
 import { DelegationModal } from './DelegationModal';
 import { useEffect, useReducer, useState } from 'react';
-import { useDelegate, useGetVotes, useProposalState } from '../lib/api';
+import { useDelegate, useGetNft, useGetVotes, useProposalState } from '../lib/api';
 import ReactTooltip from 'react-tooltip';
 import {
   firstCellBody,
@@ -22,6 +22,7 @@ import {
   TableRow,
 } from './Table';
 import { useApi } from '../../src/ui/contexts';
+import { BecomeMemberModal } from './BecomeMemberModal';
 
 const SHORT_DESCRIPTION_LENGTH = 200;
 
@@ -30,42 +31,50 @@ export function ViewDao() {
   if (!address) throw new Error('No address in url');
   const navigate = useNavigate();
   const { keyring } = useApi();
-  const [isOpen, setIsOpen] = useState(false);
+  const [delegationModalOpen, openDelegationModal] = useState(false);
+  const [becomeMemberModalOpen, openBecomeMemberModal] = useState(false);
   const [votes, setVotes] = useState(0);
+  const [isMember, setIsMember] = useState(false);
   const [proposalStates, setProposalStates] = useReducer((state, { id, value }) => {
     return { ...state, [id]: value };
   }, {} as Record<string, string | null>);
   const [proposalVotes, setProposalVotes] = useReducer((state, { id, votes }) => {
     return { ...state, [id]: votes };
   }, {} as Record<string, string | null>);
-  const { delegate } = useDelegate(address);
+
   const { getDao, forgetDao } = useDaos();
   const { getProposalsForDao } = useProposals();
   const dao = getDao(address);
   const proposals = getProposalsForDao(dao?.address);
-  const { value: accountId } = useGlobalAccountId();
-
   const { getTopVoters } = useHackedIndexer();
   const topVotes = getTopVoters(address);
 
   const { queryGetVotes } = useGetVotes(address);
+  const { queryGetNft } = useGetNft(address);
 
   const { queryState, queryProposalVotes } = useProposalState(address);
+  const { value: accountId } = useGlobalAccountId();
 
   useEffect(() => {
     proposals.map(proposal => {
       queryState(proposal.id).then(value => setProposalStates({ id: proposal.id, value }));
       queryProposalVotes(proposal.id).then(votes => setProposalVotes({ id: proposal.id, votes }));
     });
-  }, [JSON.stringify(proposals)]);
+  }, [JSON.stringify(proposals), address]);
 
   useEffect(() => {
-    queryGetVotes(accountId).then(votes => setVotes(votes));
-  }, [accountId]);
+    queryGetVotes().then(votes => setVotes(votes));
+    queryGetNft().then(result => {
+      setIsMember(result?.Err !== 'NotOwner');
+    });
+  }, [accountId, address]);
 
-  const delegateVote = async (...args) => {
-    await delegate(...args);
-    queryGetVotes(accountId).then(votes => setVotes(votes));
+  const delegateVote = () => {
+    queryGetVotes().then(votes => setVotes(votes));
+  };
+
+  const getNft = () => {
+    queryGetNft().then(result => setIsMember(result?.Err !== 'NotOwner'));
   };
 
   const forget = () => {
@@ -94,7 +103,30 @@ export function ViewDao() {
         Forget DAO
       </Button>
       <div>
-        {votes !== 0 && (
+        {!isMember && (
+          <a
+            onClick={() => openBecomeMemberModal(true)}
+            className="inline-flex mt-12 w-max justify-between items-center px-6 py-4 border text-gray-500 dark:border-gray-700 border-gray-200 rounded-md dark:bg-elevation-1 dark:hover:bg-elevation-2 hover:bg-gray-100 cursor-pointer"
+          >
+            <div className="flex items-center text-base dark:text-gray-300 text-gray-500 space-x-2">
+              <UserIcon className="h-8 w-8 dark:text-gray-500 text-gray-400 group-hover:text-gray-500" />
+              <span>Become member</span>
+            </div>
+          </a>
+        )}
+        {!isMember && (
+          <>
+            <InformationCircleIcon
+              className="inline cursor-help ml-1.5 pt-4 w-8 h-8 dark:text-gray-500"
+              data-tip
+              data-for={`formFieldHelp-delegation`}
+            />
+            <ReactTooltip id={`formFieldHelp-delegation`}>
+              Get the NFT to become part of this DAO.
+            </ReactTooltip>
+          </>
+        )}
+        {votes !== 0 && isMember && (
           <Link
             to={`/dao/${address}/proposal/new`}
             className="inline-flex mt-12 mr-6 w-max justify-between items-center px-6 py-4 border text-gray-500 dark:border-gray-700 border-gray-200 rounded-md dark:bg-elevation-1 dark:hover:bg-elevation-2 hover:bg-gray-100"
@@ -105,16 +137,18 @@ export function ViewDao() {
             </div>
           </Link>
         )}
-        <a
-          onClick={() => setIsOpen(true)}
-          className="inline-flex mt-12 w-max justify-between items-center px-6 py-4 border text-gray-500 dark:border-gray-700 border-gray-200 rounded-md dark:bg-elevation-1 dark:hover:bg-elevation-2 hover:bg-gray-100 cursor-pointer"
-        >
-          <div className="flex items-center text-base dark:text-gray-300 text-gray-500 space-x-2">
-            <UserIcon className="h-8 w-8 dark:text-gray-500 text-gray-400 group-hover:text-gray-500" />
-            <span>Delegate vote</span>
-          </div>
-        </a>
-        {votes === 0 && (
+        {isMember && (
+          <a
+            onClick={() => openDelegationModal(true)}
+            className="inline-flex mt-12 w-max justify-between items-center px-6 py-4 border text-gray-500 dark:border-gray-700 border-gray-200 rounded-md dark:bg-elevation-1 dark:hover:bg-elevation-2 hover:bg-gray-100 cursor-pointer"
+          >
+            <div className="flex items-center text-base dark:text-gray-300 text-gray-500 space-x-2">
+              <UserIcon className="h-8 w-8 dark:text-gray-500 text-gray-400 group-hover:text-gray-500" />
+              <span>Delegate vote</span>
+            </div>
+          </a>
+        )}
+        {votes === 0 && isMember && (
           <>
             <InformationCircleIcon
               className="inline cursor-help ml-1.5 pt-4 w-8 h-8 dark:text-gray-500"
@@ -122,9 +156,8 @@ export function ViewDao() {
               data-for={`formFieldHelp-delegation`}
             />
             <ReactTooltip id={`formFieldHelp-delegation`}>
-              {
-                "You don't have enough voting power yet to vote on proposals or to create new proposals. Start with delegating your vote to yourself."
-              }
+              You don't have enough voting power yet to vote on proposals or to create new
+              proposals. Start with delegating your vote to yourself.
             </ReactTooltip>
           </>
         )}
@@ -211,8 +244,21 @@ export function ViewDao() {
         'No voters yet'
       )}
 
-      {isOpen && (
-        <DelegationModal setIsOpen={setIsOpen} isOpen={isOpen} setDelegate={delegateVote} />
+      {delegationModalOpen && (
+        <DelegationModal
+          setIsOpen={openDelegationModal}
+          isOpen={delegationModalOpen}
+          onSuccess={delegateVote}
+          dao={address}
+        />
+      )}
+      {becomeMemberModalOpen && (
+        <BecomeMemberModal
+          dao={address}
+          setIsOpen={openBecomeMemberModal}
+          isOpen={becomeMemberModalOpen}
+          onSuccess={getNft}
+        />
       )}
     </Page>
   );

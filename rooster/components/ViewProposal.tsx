@@ -58,6 +58,7 @@ export function ViewProposal() {
     queryHasVoted(proposalId).then(setHasVoted);
     queryProposalVotes(proposalId).then(setProposalVotes);
     queryGetVotes(accountId).then(setVotes);
+    setWaitForVote(false);
     setJustVoted(true);
   };
 
@@ -173,7 +174,7 @@ export function ViewProposal() {
                 </div>
               </div>
             </div>
-            {!hasVoted && canVote ? (
+            {!hasVoted && canVote && !waitForVote ? (
               <a
                 onClick={() => setIsOpen(true)}
                 className="inline-flex mt-8 w-max justify-between items-center px-6 py-4 border text-gray-500 dark:border-gray-700 border-gray-200 rounded-md dark:bg-elevation-1 dark:hover:bg-elevation-2 hover:bg-gray-100 cursor-pointer"
