@@ -125,11 +125,11 @@ export function AddDao() {
       const contract = await instantiateDAO({
         codeHash: template === 'rooster' ? governorCodeHash : codeHash,
         args,
-        options: Object.assign({}, options, {value: nftValue}), //if value is too low createCollection does not work?
+        options: Object.assign({}, options, { value: nftValue }), //if value is too low createCollection does not work?
       });
-      addDao(contract);
       setDeploymentMessage('The NFT collection is being created.');
-      await createCollection(contract.address, options);
+      const collectionId = await createCollection(contract.address, options);
+      addDao(contract, collectionId);
       setDeploymentMessage('Your membership NFT is being minted.');
       await becomeMember(contract.address, options, nftValue);
       navigate(`/dao/${contract.address}`);

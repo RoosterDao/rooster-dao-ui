@@ -94,7 +94,16 @@ export const useInstantiateDao = () => {
         .signAndSend(accountOrPair, { signer: undefined }, async result => {
           await result;
           if (result.isCompleted) {
-            resolve(true);
+            (result?.events ?? []).forEach(record => {
+              const { event } = record;
+              if (api.events.contracts.ContractEmitted.is(event)) {
+                const [account_id, contract_evt] = event.data;
+                const decoded = abi.decodeEvent(contract_evt);
+                if (decoded.event.identifier === 'CollectionCreated') {
+                  resolve(decoded.args[0].toHuman());
+                }
+              }
+            });
           } else if (result.isError) {
             reject();
           }

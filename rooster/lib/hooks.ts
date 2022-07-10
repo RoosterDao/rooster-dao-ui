@@ -14,6 +14,7 @@ interface dao {
   votingPeriod: number;
   executionDelay: number;
   abi: Record<string, unknown>;
+  collectionId: string;
 }
 
 interface proposal {
@@ -88,8 +89,8 @@ export function useDaos() {
   const [daosList, setDaosList] = useLocalStorage<dao[]>(DAO_LOCAL_STORAGE, [] as dao[]);
   const { forgetProposalsForDao, forgetAllProposals } = useProposals();
 
-  const addDao = (dao: dao) => {
-    daosSubject.next([...daosList, dao]);
+  const addDao = (dao: dao, collectionId) => {
+    daosSubject.next([...daosList, Object.assign({}, dao, { collectionId })]);
   };
 
   const getDao = address => {
