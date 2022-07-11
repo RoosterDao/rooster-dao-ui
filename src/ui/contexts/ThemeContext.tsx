@@ -1,7 +1,7 @@
 // Copyright 2022 @paritytech/contracts-ui authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
-import { createContext, useContext, useEffect } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { useLocalStorage } from 'ui/hooks/useLocalStorage';
 
 type Theme = 'light' | 'dark';
@@ -11,20 +11,13 @@ type Props = {
 };
 
 const INIT_STATE: Props = {
-  theme:
-    'theme' in localStorage
-      ? localStorage.theme === 'dark'
-        ? 'dark'
-        : 'light'
-      : window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? 'dark'
-      : 'light',
+  theme: 'light',
 };
 
 export const ThemeContext = createContext(INIT_STATE);
 
 export const ThemeContextProvider = ({ children }: React.PropsWithChildren<Partial<Props>>) => {
-  const [theme, setTheme] = useLocalStorage<Theme>('theme', INIT_STATE.theme);
+  const [theme, setTheme] = useState('light');
   useEffect(() => {
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');

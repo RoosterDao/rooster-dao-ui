@@ -6,7 +6,7 @@ import {
   CogIcon,
   PlusCircleIcon,
   SearchCircleIcon,
-  DotsCircleHorizontalIcon
+  DotsCircleHorizontalIcon,
 } from '@heroicons/react/outline';
 import { NavLink } from '../../src/ui/components/sidebar/NavLink';
 import { Link } from 'react-router-dom';
@@ -57,12 +57,6 @@ function Footer() {
             </a>
           </div>
         </div>
-        <Link to="/settings">
-          <CogIcon
-            className="float-right mt-2 h-4 w-4 dark:text-gray-500 dark:hover:text-gray-300 text-gray-600 hover:text-gray-400"
-            aria-hidden="true"
-          />
-        </Link>
       </div>
     </footer>
   );
