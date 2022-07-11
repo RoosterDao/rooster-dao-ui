@@ -127,10 +127,12 @@ export function ViewDao() {
   };
 
   useLayoutEffect(() => {
+    setMemberMessage('');
+    setRooster({});
     if (nft?.Ok) {
       checkForEvolutions(nft.Ok);
     }
-  }, [nft])
+  }, [nft]);
 
   const getNft = () => {
     queryGetNft().then(async result => {
