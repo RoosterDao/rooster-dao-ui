@@ -31,7 +31,7 @@ export function Page({ children }): React.ReactElement {
                 <Link to="/">Rooster DAO</Link>
               </h1>
               <div className="dark:text-gray-400 text-gray-500 text-sm">
-                -- Short description here --
+                A DAO made for and on Dotsama.
               </div>
             </div>
             <div className="flex flex-col py-4 h-full">

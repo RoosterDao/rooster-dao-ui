@@ -121,7 +121,7 @@ export function ViewDao() {
       }
     } else {
       setMemberMessage(
-        'Congratulations, your are part of this DAO now! Vote on a proposal to receive the first evolution of your NFT.'
+        'Congratulations, you are part of this DAO now! Vote on a proposal to receive the first evolution of your NFT.'
       );
     }
   };

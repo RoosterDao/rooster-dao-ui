@@ -80,7 +80,7 @@ export function AddDao() {
   const { becomeMember } = useBecomeMember();
   const [codeHash, setCodeHash] = useState('');
   const [votingDelay, setVotingDelay] = useState(new BN(0));
-  const [unitVotingDelay, setUnitVotingDelay] = useState(units.seconds);
+  const [unitVotingDelay, setUnitVotingDelay] = useState(units.hours);
   const [votingPeriod, setVotingPeriod] = useState(new BN(1));
   const [unitPeriod, setUnitPeriod] = useState(units.hours);
   const [executionDelay, setExecutionDelay] = useState(new BN(1));

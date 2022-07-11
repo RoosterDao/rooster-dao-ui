@@ -14,7 +14,7 @@ import { truncate } from '../../src/ui/util';
 import { useCastVote, useGetVotes, useHasVoted, useProposalState } from '../lib/api';
 import { useDaos, useGlobalAccountId, useProposals } from '../lib/hooks';
 import { useHackedIndexer } from './HackedIndexerContext';
-import { lastCellBody, lastCellHeader, Table, TableRow } from './Table';
+import { lastCellHeader, Table, TableRow } from './Table';
 import { Page } from './Page';
 import { Timeline, Step } from './ProposalTimeLine';
 import { VoteType, VotingModal } from './VotingModal';
@@ -214,7 +214,7 @@ export function ViewProposal() {
               <TableRow key={index} index={index}>
                 <td className="">{proposalVotes?.for ?? '...'}</td>
                 <td className="">{proposalVotes?.against ?? '...'}</td>
-                <td className={lastCellBody}>{proposalVotes?.abstain ?? '...'}</td>
+                <td className="">{proposalVotes?.abstain ?? '...'}</td>
               </TableRow>
             }
           />

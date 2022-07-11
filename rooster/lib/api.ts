@@ -144,6 +144,7 @@ export const propose = ({
     const argValues = {
       transaction: {
         callee,
+        input: randomAsHex(), //to make proposals with same description still execute for testing purposes
         selector,
         transferredValue,
         gasLimit,
