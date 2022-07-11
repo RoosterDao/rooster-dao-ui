@@ -29,7 +29,7 @@ import {
 import { useApi } from '../../src/ui/contexts';
 import { BecomeMemberModal } from './BecomeMemberModal';
 import { fetchRooster } from '../lib/ipfs-api';
-import { useRmrkCoreResources } from '../lib/runtime-api';
+import { useRmrkAcceptResource, useRmrkCoreResources } from '../lib/runtime-api';
 import { EvolutionModal } from './EvolutionModal';
 
 const SHORT_DESCRIPTION_LENGTH = 200;
@@ -77,6 +77,7 @@ export function ViewDao() {
   const { queryGetVotes } = useGetVotes(address);
   const { queryGetNft } = useGetNft(address);
   const { queryNextResource } = useRmrkCoreResources();
+  const { acceptResource } = useRmrkAcceptResource();
   const { queryListOwners, queryListProposals } = useLists();
 
   const { queryState, queryProposalVotes } = useProposalState(address);
@@ -138,20 +139,18 @@ export function ViewDao() {
         }
       } else {
         if (resource.currentNft.pending) {
-          setMemberMessage('Get your first evolution!');
-          setAvailableEvolution({
-            resourceId: resource.currentNft.id,
-            currentCId,
-            nextCId,
-            collectionId,
-            nftId,
-          });
+          setMemberMessage(
+            'Stay tuned, your NFT is almost here...'
+          );
+          await acceptResource({ collectionId, nftId, resourceId: resource.currentNft.id });
+          checkForEvolutions([collectionId, nftId]);
         } else {
           fetchRooster(currentCId).then(setRooster);
           setAvailableEvolution({});
         }
       }
     } else {
+      fetchRooster().then(setRooster);
       setMemberMessage(
         'Congratulations, you are part of this DAO now! Vote on a proposal to receive the first evolution of your NFT.'
       );
