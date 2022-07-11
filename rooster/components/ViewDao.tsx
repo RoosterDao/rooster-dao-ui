@@ -142,6 +142,7 @@ export function ViewDao() {
           setMemberMessage(
             'Stay tuned, your NFT is almost here...'
           );
+          setAvailableEvolution({});
           await acceptResource({ collectionId, nftId, resourceId: resource.currentNft.id });
           checkForEvolutions([collectionId, nftId]);
         } else {
