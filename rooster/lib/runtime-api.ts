@@ -6,6 +6,7 @@ import { useGlobalAccountId } from './hooks';
 
 export function useRmrkCoreResources() {
   const { api } = useApi();
+  const { value: accountId } = useGlobalAccountId();
 
   const queryResources = (collectionId, nftId, resourceId = 0) =>
     new Promise<any>(async (resolve, reject) => {
@@ -17,7 +18,7 @@ export function useRmrkCoreResources() {
       resolve(result.toHuman());
     });
 
-  const queryNextResourceId = (collectionId, nftId) =>
+  const queryNextResource = (collectionId, nftId) =>
     new Promise<any>(async (resolve, reject) => {
       let currentNft = await queryResources(collectionId, nftId, 0);
       let nextNft = await queryResources(collectionId, nftId, 1);
@@ -33,10 +34,11 @@ export function useRmrkCoreResources() {
         resourceId,
         currentNft,
         nextNft,
+        accountId,
       });
     });
 
-  return { queryResources, queryNextResourceId };
+  return { queryResources, queryNextResource };
 }
 
 export const useRmrkAcceptResource = () => {

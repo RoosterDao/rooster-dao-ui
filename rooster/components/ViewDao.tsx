@@ -16,7 +16,7 @@ import {
 } from '@heroicons/react/outline';
 import { useHackedIndexer } from './HackedIndexerContext';
 import { DelegationModal } from './DelegationModal';
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useLayoutEffect, useReducer, useState } from 'react';
 import { useGetNft, useGetVotes, useProposalState } from '../lib/api';
 import ReactTooltip from 'react-tooltip';
 import {
@@ -46,7 +46,7 @@ export function ViewDao() {
   const [evolutionModalOpen, openEvolutionModal] = useState(false);
   const [votes, setVotes] = useState(0);
   const [nft, setNft] = useState(false);
-  const [rooster, setRooster] = useState('');
+  const [rooster, setRooster] = useState({} as any);
   const [availableEvolution, setAvailableEvolution] = useState({} as any);
   const [memberMessage, setMemberMessage] = useState('');
 
@@ -66,7 +66,7 @@ export function ViewDao() {
 
   const { queryGetVotes } = useGetVotes(address);
   const { queryGetNft } = useGetNft(address);
-  const { queryResources, queryNextResourceId } = useRmrkCoreResources();
+  const { queryResources, queryNextResource } = useRmrkCoreResources();
 
   const { queryState, queryProposalVotes } = useProposalState(address);
   const { value: accountId } = useGlobalAccountId();
@@ -85,9 +85,9 @@ export function ViewDao() {
   };
 
   const checkForEvolutions = async ([collectionId, nftId]) => {
-    const resource = await queryNextResourceId(collectionId, nftId);
-
-    console.log('test', resource);
+    const resource = await queryNextResource(collectionId, nftId);
+    setMemberMessage('');
+    setRooster({});
     if (resource.currentNft) {
       const currentCId = getCID(resource?.currentNft?.resource?.Basic?.metadata ?? null);
       const nextCId = getCID(resource?.nextNft?.resource?.Basic?.metadata ?? null);
@@ -95,7 +95,7 @@ export function ViewDao() {
       if (resource.nextNft) {
         fetchRooster(currentCId).then(setRooster);
 
-        if (resource.nextNft.pending) {
+        if (resource.nextNft.pending && Number(resource.nextNft.id) <= 3) {
           setAvailableEvolution({
             resourceId: resource.nextNft.id,
             currentCId,
@@ -126,13 +126,15 @@ export function ViewDao() {
     }
   };
 
+  useLayoutEffect(() => {
+    if (nft?.Ok) {
+      checkForEvolutions(nft.Ok);
+    }
+  }, [nft])
+
   const getNft = () => {
     queryGetNft().then(async result => {
       setNft(result);
-
-      if (result?.Ok) {
-        checkForEvolutions(result.Ok);
-      }
     });
   };
 
