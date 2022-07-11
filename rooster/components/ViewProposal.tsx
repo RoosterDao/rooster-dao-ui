@@ -13,7 +13,6 @@ import { useApi } from '../../src/ui/contexts';
 import { truncate } from '../../src/ui/util';
 import { useCastVote, useGetVotes, useHasVoted, useProposalState } from '../lib/api';
 import { useDaos, useGlobalAccountId, useProposals } from '../lib/hooks';
-import { useHackedIndexer } from './HackedIndexerContext';
 import { lastCellHeader, Table, TableRow } from './Table';
 import { Page } from './Page';
 import { Timeline, Step } from './ProposalTimeLine';
