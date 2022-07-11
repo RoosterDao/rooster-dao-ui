@@ -8,7 +8,6 @@ import { useDaos, useProposals } from '../lib/hooks';
 import { ErrorBoundary } from './ErrorBoundary';
 import { Link, useNavigate } from 'react-router-dom';
 import { TrashIcon } from '@heroicons/react/outline';
-import { useHackedIndexer } from './HackedIndexerContext';
 import {
   firstCellBody,
   firstCellHeader,
@@ -17,12 +16,42 @@ import {
   Table,
   TableRow,
 } from './Table';
+import { useEffect, useReducer } from 'react';
+import { useLists } from '../lib/api';
+
+function onlyUnique(value, index, self) {
+  return self.indexOf(value) === index;
+}
 
 export function Explore() {
   const { daosList, forgetAllDaos } = useDaos();
   const navigate = useNavigate();
   const { getProposalsForDao } = useProposals();
-  const { getProposalVoters } = useHackedIndexer();
+  const [daoVoters, setDaoVoters] = useReducer((state, { id, value }) => {
+    return { ...state, [id]: value };
+  }, {} as Record<string, string | null>);
+  const [daoHolders, setDaoHolders] = useReducer((state, { id, value }) => {
+    return { ...state, [id]: value };
+  }, {} as Record<string, string | null>);
+  const { queryListOwners, queryListProposals } = useLists();
+
+  useEffect(() => {
+    daosList.forEach(dao => {
+      queryListOwners(dao.address).then(x =>
+        setDaoHolders({ id: dao.address, value: x?.toArray().length ?? 0 })
+      );
+      queryListProposals(dao.address).then(x =>
+        setDaoVoters({
+          id: dao.address,
+          value: x
+            .toJSON()
+            .flatMap(entry => entry[1].hasVoted)
+            .filter(onlyUnique).length,
+        })
+      );
+    });
+  }, []);
+
   return (
     <ErrorBoundary>
       <Page>
@@ -68,8 +97,8 @@ export function Explore() {
                   </div>
                 </td>
                 <td>{getProposalsForDao(dao.address)?.length ?? '?'}</td>
-                <td>tbd</td>
-                <td className={lastCellBody}>{getProposalVoters(dao.address)}</td>
+                <td>{daoHolders[dao.address]}</td>
+                <td className={lastCellBody}>{daoVoters[dao.address]}</td>
               </TableRow>
             ))}
           />

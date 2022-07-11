@@ -2,7 +2,7 @@
 import { ModalBase as Modal, ModalProps } from '../../src/ui/components/modal/ModalBase';
 import { useEffect, useState } from 'react';
 import { TxState } from './Page';
-import { ArrowCircleRightIcon, ExclamationCircleIcon } from '@heroicons/react/outline';
+import { ArrowNarrowRightIcon, ExclamationCircleIcon } from '@heroicons/react/outline';
 import { fetchRooster } from '../lib/ipfs-api';
 import { LoaderSmall } from '../../src/ui/components';
 import { useRmrkAcceptResource } from '../lib/runtime-api';
@@ -70,7 +70,7 @@ export const EvolutionModal = ({
           </div>
           <div className="col-span-1 self-center">
             <div className="dark:text-gray-300 text-gray-300 space-x-2">
-              <ArrowCircleRightIcon></ArrowCircleRightIcon>
+              <ArrowNarrowRightIcon></ArrowNarrowRightIcon>
             </div>
           </div>
           <div className="col-span-3">

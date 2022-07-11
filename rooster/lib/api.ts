@@ -325,5 +325,32 @@ export function useProposalState(dao) {
     }
   };
 
-  return { queryState, queryProposalVotes, useGetVotes };
+  return { queryState, queryProposalVotes };
+}
+
+export function useLists() {
+  const { api } = useApi();
+  const { value: caller } = useGlobalAccountId();
+
+  const queryListOwners = async (dao): Promise<[] | null> => {
+    const contract = new Contract(api, abi, dao);
+    const result = await contract.query.listOwners(caller, {});
+    if (result.result.isOk) {
+      return result.output;
+    } else {
+      return null;
+    }
+  };
+
+  const queryListProposals = async (dao): Promise<[] | null> => {
+    const contract = new Contract(api, abi, dao);
+    const result = await contract.query.listProposals(caller, {});
+    if (result.result.isOk) {
+      return result.output;
+    } else {
+      return null;
+    }
+  };
+
+  return { queryListOwners, queryListProposals };
 }

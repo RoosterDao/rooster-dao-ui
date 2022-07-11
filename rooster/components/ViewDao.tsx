@@ -14,10 +14,9 @@ import {
   InformationCircleIcon,
   StarIcon,
 } from '@heroicons/react/outline';
-import { useHackedIndexer } from './HackedIndexerContext';
 import { DelegationModal } from './DelegationModal';
 import { useEffect, useLayoutEffect, useReducer, useState } from 'react';
-import { useGetNft, useGetVotes, useProposalState } from '../lib/api';
+import { useGetNft, useGetVotes, useLists, useProposalState } from '../lib/api';
 import ReactTooltip from 'react-tooltip';
 import {
   firstCellBody,
@@ -36,6 +35,10 @@ import { EvolutionModal } from './EvolutionModal';
 const SHORT_DESCRIPTION_LENGTH = 200;
 const getCID = cid => cid?.replace('ipfs://ipfs/', '') ?? null;
 
+const reducerFunc = (state, { id, value }) => {
+  return { ...state, [id]: value };
+};
+
 export function ViewDao() {
   const { address } = useParams();
   if (!address) throw new Error('No address in url');
@@ -50,38 +53,67 @@ export function ViewDao() {
   const [availableEvolution, setAvailableEvolution] = useState({} as any);
   const [memberMessage, setMemberMessage] = useState('');
 
-  const [proposalStates, setProposalStates] = useReducer((state, { id, value }) => {
-    return { ...state, [id]: value };
-  }, {} as Record<string, string | null>);
-  const [proposalVotes, setProposalVotes] = useReducer((state, { id, votes }) => {
-    return { ...state, [id]: votes };
-  }, {} as Record<string, string | null>);
+  const [proposalStates, setProposalStates] = useReducer(
+    reducerFunc,
+    {} as Record<string, string | null>
+  );
+  const [proposalVotes, setProposalVotes] = useReducer(
+    reducerFunc,
+    {} as Record<string, string | null>
+  );
+
+  const [topVoter, setTopVoter] = useReducer(reducerFunc, {} as Record<string, string | null>);
+  const [votesByHolder, setVotesByHolder] = useReducer(
+    reducerFunc,
+    {} as Record<string, string | null>
+  );
+  const [holders, setHolder] = useState([]);
 
   const { getDao, forgetDao } = useDaos();
   const { getProposalsForDao } = useProposals();
   const dao = getDao(address);
   const proposals = getProposalsForDao(dao?.address);
-  const { getTopVoters } = useHackedIndexer();
-  const topVotes = getTopVoters(address);
 
   const { queryGetVotes } = useGetVotes(address);
   const { queryGetNft } = useGetNft(address);
-  const { queryResources, queryNextResource } = useRmrkCoreResources();
+  const { queryNextResource } = useRmrkCoreResources();
+  const { queryListOwners, queryListProposals } = useLists();
 
   const { queryState, queryProposalVotes } = useProposalState(address);
   const { value: accountId } = useGlobalAccountId();
 
   const isMember = nft?.Err !== 'NotOwner';
 
+  const getHolders = () => {
+    queryListOwners(address).then(x => {
+      const holder = x.toArray().map(x => ({ id: x.toJSON()[0], value: x.toJSON()[2] }));
+      holder.forEach(x => setVotesByHolder(x));
+    });
+  };
+
   useEffect(() => {
-    proposals.map(proposal => {
+    proposals.forEach(proposal => {
       queryState(proposal.id).then(value => setProposalStates({ id: proposal.id, value }));
-      queryProposalVotes(proposal.id).then(votes => setProposalVotes({ id: proposal.id, votes }));
+      queryProposalVotes(proposal.id).then(value => setProposalVotes({ id: proposal.id, value }));
+      getHolders();
     });
   }, [JSON.stringify(proposals), address]);
 
+  useEffect(() => {
+    queryListProposals(address).then(x => {
+      const proposalVoters = x.toJSON().flatMap(entry => entry[1].hasVoted);
+      const top = Object.keys(votesByHolder).map(holder => {
+        return { id: holder, value: proposalVoters.filter(voter => voter === holder).length };
+      });
+      const sorted = top.sort((a, b) => b.value - a.value);
+      setHolder(sorted.map(x => x.id));
+      top.forEach(setTopVoter);
+    });
+  }, [votesByHolder]);
+
   const getDelegateVotes = () => {
     queryGetVotes().then(votes => setVotes(votes));
+    getHolders();
   };
 
   const checkForEvolutions = async ([collectionId, nftId]) => {
@@ -304,7 +336,7 @@ export function ViewDao() {
       )}
 
       <h2 className="mt-12 mb-3 text-xl font-semibold dark:text-white text-gray-700">Top Voters</h2>
-      {topVotes.length > 0 ? (
+      {holders.length > 0 ? (
         <Table
           classes="w-full"
           header={
@@ -317,12 +349,12 @@ export function ViewDao() {
               <th className={`${lastCellHeader} w-40`}>Voting power</th>
             </>
           }
-          body={topVotes.map((voter, index) => (
-            <TableRow key={voter.address} index={index}>
+          body={holders.map((voter, index) => (
+            <TableRow key={voter} index={index}>
               <td className={firstCellBody}>{index + 1}</td>
               <td className="text-left">
                 <div className="inline mr-4">
-                  <strong>{keyring.getPair(voter.address).meta.name}</strong>
+                  <strong>{keyring.getPair(voter).meta.name}</strong>
                 </div>
               </td>
               <td>
@@ -330,15 +362,17 @@ export function ViewDao() {
                 <div className="inline mt-4 dark:text-gray-400 text-gray-500 text-sm">
                   <div className="inline-flex items-center">
                     <span className="inline-block relative bg-blue-500 text-blue-400 bg-opacity-20 text-xs px-1.5 py-1 font-mono rounded">
-                      {truncate(voter.address, 6)}
+                      {truncate(voter, 6)}
                     </span>
-                    <CopyButton className="ml-1" value={voter.address} />
+                    <CopyButton className="ml-1" value={voter} />
                   </div>
                 </div>
               </td>
-              <td className="">{voter.proposalsVoted}</td>
-              <td className="">{voter.totalVotes}</td>
-              <td className={lastCellBody}>tbd</td>
+              <td className="">{topVoter[voter]}</td>
+              <td className="">{votesByHolder[voter]}</td>
+              <td className={lastCellBody}>
+                {((votesByHolder[voter] / holders.length) * 100).toString().substring(0, 5)}%
+              </td>
             </TableRow>
           ))}
         />
