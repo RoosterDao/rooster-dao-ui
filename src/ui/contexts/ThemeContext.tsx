@@ -17,7 +17,7 @@ const INIT_STATE: Props = {
 export const ThemeContext = createContext(INIT_STATE);
 
 export const ThemeContextProvider = ({ children }: React.PropsWithChildren<Partial<Props>>) => {
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState<Theme>('light');
   useEffect(() => {
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
