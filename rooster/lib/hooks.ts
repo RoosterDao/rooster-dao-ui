@@ -123,11 +123,6 @@ export const useGlobalAccountId = () => {
   const { accounts } = useApi();
   const [value, setAccountId] = useState(accounts?.[0]?.address ?? "");
 
-  useEffect((): void => {
-    if (!accounts || accounts.length === 0) return;
-    setAccountId(accounts[0].address);
-  }, [accounts]);
-
   const onChange = acc => {
     accountSubject.next(acc);
   };
