@@ -52,7 +52,7 @@ function Footer() {
             <span>Site based on</span>
           </div>
           <div className="text-xs font-medium dark:text-gray-500 text-gray-600 dark:hover:text-gray-300 hover:text-gray-400 cursor-pointer">
-            <a href="https://paritytech.github.io/contracts-ui/" target="_blank">
+            <a href="https://contracts-ui.substrate.io/" target="_blank">
               Parity's Contracts UI
             </a>
           </div>
