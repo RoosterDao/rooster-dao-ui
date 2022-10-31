@@ -1,11 +1,11 @@
 {
   "source": {
-    "hash": "0x9203e1d09eff76c7588cd6eb95eb6f62b861566caa013a5e29cd038f733ed7e4",
-    "language": "ink! 3.3.0",
+    "hash": "0xcc3543725ebfe77aeae69c8bf609b212c77d310a33639cad07cd423225ffb855",
+    "language": "ink! 3.3.1",
     "compiler": "rustc 1.63.0-nightly"
   },
   "contract": {
-    "name": "governer_contract",
+    "name": "rooster",
     "version": "0.0.1",
     "authors": [
       "RoosterDao"
@@ -174,7 +174,7 @@
                 "displayName": [
                   "VoteType"
                 ],
-                "type": 51
+                "type": 49
               }
             }
           ],
@@ -643,7 +643,7 @@
                 "displayName": [
                   "VoteType"
                 ],
-                "type": 51
+                "type": 49
               }
             }
           ],
@@ -655,7 +655,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 52
+            "type": 48
           },
           "selector": "0xcaed155c"
         },
@@ -679,7 +679,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 52
+            "type": 48
           },
           "selector": "0xd00ec894"
         },
@@ -712,7 +712,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 53
+            "type": 50
           },
           "selector": "0xcb14b5b5"
         },
@@ -736,7 +736,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 52
+            "type": 48
           },
           "selector": "0xc59654fe"
         },
@@ -753,7 +753,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 52
+            "type": 48
           },
           "selector": "0xe94fc5c9"
         }
@@ -1373,8 +1373,7 @@
             }
           },
           "path": [
-            "roosterdao",
-            "traits",
+            "rooster",
             "governor",
             "ProposalCore"
           ]
@@ -1479,8 +1478,7 @@
             }
           },
           "path": [
-            "roosterdao",
-            "traits",
+            "rooster",
             "governor",
             "ProposalVote"
           ]
@@ -1735,8 +1733,7 @@
             }
           },
           "path": [
-            "roosterdao",
-            "traits",
+            "rooster",
             "governor",
             "ProposalState"
           ]
@@ -1892,13 +1889,24 @@
                 {
                   "index": 9,
                   "name": "MintFailed"
+                },
+                {
+                  "index": 10,
+                  "name": "AddResourceFailed"
+                },
+                {
+                  "index": 11,
+                  "name": "InternalError"
+                },
+                {
+                  "index": 12,
+                  "name": "CreateCollectionFailed"
                 }
               ]
             }
           },
           "path": [
-            "roosterdao",
-            "traits",
+            "rooster",
             "governor",
             "GovernorError"
           ]
@@ -1944,129 +1952,6 @@
                 {
                   "fields": [
                     {
-                      "type": 49
-                    }
-                  ],
-                  "index": 1,
-                  "name": "Err"
-                }
-              ]
-            }
-          },
-          "params": [
-            {
-              "name": "T",
-              "type": 9
-            },
-            {
-              "name": "E",
-              "type": 49
-            }
-          ],
-          "path": [
-            "Result"
-          ]
-        }
-      },
-      {
-        "id": 49,
-        "type": {
-          "def": {
-            "variant": {
-              "variants": [
-                {
-                  "fields": [
-                    {
-                      "type": 50,
-                      "typeName": "RCErrorCode"
-                    }
-                  ],
-                  "index": 0,
-                  "name": "ErrorCode"
-                }
-              ]
-            }
-          },
-          "path": [
-            "governor_contract",
-            "RCError"
-          ]
-        }
-      },
-      {
-        "id": 50,
-        "type": {
-          "def": {
-            "variant": {
-              "variants": [
-                {
-                  "index": 0,
-                  "name": "Failed"
-                },
-                {
-                  "index": 1,
-                  "name": "CollectionNotCreated"
-                },
-                {
-                  "index": 2,
-                  "name": "CollectionAlreadyCreated"
-                }
-              ]
-            }
-          },
-          "path": [
-            "governor_contract",
-            "RCErrorCode"
-          ]
-        }
-      },
-      {
-        "id": 51,
-        "type": {
-          "def": {
-            "variant": {
-              "variants": [
-                {
-                  "index": 0,
-                  "name": "Against"
-                },
-                {
-                  "index": 1,
-                  "name": "For"
-                },
-                {
-                  "index": 2,
-                  "name": "Abstain"
-                }
-              ]
-            }
-          },
-          "path": [
-            "roosterdao",
-            "traits",
-            "governor",
-            "VoteType"
-          ]
-        }
-      },
-      {
-        "id": 52,
-        "type": {
-          "def": {
-            "variant": {
-              "variants": [
-                {
-                  "fields": [
-                    {
-                      "type": 9
-                    }
-                  ],
-                  "index": 0,
-                  "name": "Ok"
-                },
-                {
-                  "fields": [
-                    {
                       "type": 45
                     }
                   ],
@@ -2092,7 +1977,35 @@
         }
       },
       {
-        "id": 53,
+        "id": 49,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "index": 0,
+                  "name": "Against"
+                },
+                {
+                  "index": 1,
+                  "name": "For"
+                },
+                {
+                  "index": 2,
+                  "name": "Abstain"
+                }
+              ]
+            }
+          },
+          "path": [
+            "rooster",
+            "governor",
+            "VoteType"
+          ]
+        }
+      },
+      {
+        "id": 50,
         "type": {
           "def": {
             "variant": {
