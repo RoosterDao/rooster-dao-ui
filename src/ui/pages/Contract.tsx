@@ -11,10 +11,9 @@ import { Loader } from '../components/common/Loader';
 import { Tabs } from '../components/common/Tabs';
 import { HeaderButtons } from '../components/common/HeaderButtons';
 import { PageFull } from 'ui/templates';
-import { useContract } from 'ui/hooks';
-import { displayDate, truncate } from 'ui/util';
-import { checkOnChainCode } from 'api';
-import { useApi } from 'ui/contexts';
+import { checkOnChainCode, displayDate, truncate } from 'helpers';
+import { useApi, useDatabase } from 'ui/contexts';
+import { ContractDocument, ContractPromise } from 'types';
 
 const TABS = [
   {
@@ -40,41 +39,50 @@ const TABS = [
 export function Contract() {
   const navigate = useNavigate();
   const { api } = useApi();
+  const { db } = useDatabase();
 
   const { address, activeTab = 'interact' } = useParams();
 
+  const [contract, setContract] = useState<ContractPromise>();
+  const [document, setDocument] = useState<ContractDocument>();
+
   if (!address) throw new Error('No address in url');
-
-  //TODO: check if address is valid
-
-  const { data, isLoading, isValid } = useContract(address);
 
   const [tabIndex, setTabIndex] = useState(TABS.findIndex(({ id }) => id === activeTab) || 1);
 
   const [isOnChain, setIsOnChain] = useState<boolean>();
 
   useEffect(() => {
-    data &&
-      checkOnChainCode(api, data[1]?.codeHash || '')
+    document &&
+      checkOnChainCode(api, document.codeHash || '')
         .then(isOnChain => setIsOnChain(isOnChain))
         .catch(console.error);
-  }, [api, data]);
+  }, [api, document]);
 
   useEffect((): void => {
-    if (!isLoading && (!isValid || !data || !data[0])) {
-      navigate('/');
+    async function getContract() {
+      const d = await db.contracts.get({ address });
+      d ? setDocument(d) : navigate('/');
     }
-  }, [data, isLoading, isValid, navigate]);
+    getContract().catch(e => {
+      console.error(e);
+    });
+  }, [address, api, db.contracts, navigate]);
 
-  if (!data || !data[0] || !data[1]) {
+  useEffect(() => {
+    if (!document || !address) return;
+    const c = new ContractPromise(api, document.abi, address);
+    setContract(c);
+  }, [address, api, document]);
+
+  if (!document || !contract) {
     return null;
   }
 
-  const [contract, document] = data;
   const projectName = contract?.abi.info.contract.name;
 
   return (
-    <Loader isLoading={(!contract && isLoading) || isOnChain === undefined}>
+    <Loader isLoading={isOnChain === undefined} message="Loading contract...">
       <PageFull
         accessory={<HeaderButtons contract={document} />}
         header={document.name || projectName}
@@ -101,7 +109,7 @@ export function Contract() {
         }
       >
         <Tabs index={tabIndex} setIndex={setTabIndex} tabs={TABS}>
-          <MetadataTab abi={contract?.abi} />
+          <MetadataTab abi={contract.abi} />
           <InteractTab contract={contract} />
         </Tabs>
       </PageFull>

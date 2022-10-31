@@ -3,26 +3,47 @@
 
 import { useEffect, useState } from 'react';
 import type { HTMLAttributes } from 'react';
-
+import { isWeb3Injected } from '@polkadot/extension-dapp';
+import { AccountsError, ExtensionError } from './common/AccountsError';
 import { useApi, useDatabase } from 'ui/contexts';
 import { Loader, ConnectionError } from 'ui/components/common';
+import { isKeyringLoaded } from 'helpers';
 
 export function AwaitApis({ children }: HTMLAttributes<HTMLDivElement>): React.ReactElement {
-  const { error, status, keyringStatus, endpoint } = useApi();
-  const { isDbReady } = useDatabase();
+  const { accounts, api, endpoint, status, systemChainType } = useApi();
+  const { db } = useDatabase();
   const [message, setMessage] = useState('');
 
-  const isLoading = !isDbReady || keyringStatus !== 'READY' || status !== 'READY';
-
   useEffect(() => {
-    !isDbReady && setMessage('Loading data...');
-    keyringStatus !== 'READY' && setMessage('Loading accounts...');
-    status !== 'READY' && setMessage(`Connecting to ${endpoint}...`);
-  }, [isDbReady, keyringStatus, status, endpoint]);
+    !db && setMessage('Loading data...');
+    status === 'loading' && setMessage(`Connecting to ${endpoint}...`);
+    !isKeyringLoaded() && setMessage(`Loading accounts...`);
+  }, [db, endpoint, api, status]);
+
+  if (status === 'error') {
+    return <ConnectionError />;
+  }
+
+  if (
+    !isWeb3Injected &&
+    status === 'connected' &&
+    !systemChainType.isDevelopment &&
+    isKeyringLoaded()
+  ) {
+    return <ExtensionError />;
+  }
+
+  if (isKeyringLoaded() && accounts?.length === 0) {
+    return <AccountsError />;
+  }
 
   return (
     <>
-      {error ? <ConnectionError /> : isLoading ? <Loader message={message} isLoading /> : children}
+      {status === 'loading' || !db || !isKeyringLoaded() ? (
+        <Loader message={message} isLoading />
+      ) : (
+        children
+      )}
     </>
   );
 }

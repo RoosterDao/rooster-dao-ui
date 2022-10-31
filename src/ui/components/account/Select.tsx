@@ -6,13 +6,14 @@ import { GroupBase } from 'react-select';
 import { Dropdown } from '../common/Dropdown';
 import { Account } from './Account';
 import { createAccountOptions } from 'ui/util/dropdown';
-import type { DropdownOption, DropdownProps, OrFalsy, ValidFormField } from 'types';
+import type { DropdownOption, DropdownProps, ValidFormField } from 'types';
 import { useApi, useDatabase } from 'ui/contexts';
-import { classes } from 'ui/util';
+import { classes } from 'helpers';
+import { useDbQuery } from 'ui/hooks';
 
-type Props = ValidFormField<OrFalsy<string>> & Omit<DropdownProps<string>, 'options'>;
+type Props = ValidFormField<string> & Omit<DropdownProps<string>, 'options'>;
 
-function Option({ label, value }: DropdownOption<string>) {
+export function Option({ label, value }: DropdownOption<string>) {
   return <Account className="p-1.5" name={label} value={value} />;
 }
 
@@ -20,7 +21,7 @@ function Select({
   isDisabled,
   onChange,
   options,
-  placeholder = 'Select Address...',
+  placeholder = 'Select account',
   className,
   value,
 }: DropdownProps<string>) {
@@ -39,32 +40,29 @@ function Select({
 }
 
 export function AccountSelect({ placeholder = 'Select account', ...props }: Props) {
-  const { keyring } = useApi();
+  const { accounts } = useApi();
 
   return (
-    <Select
-      options={createAccountOptions(keyring?.getPairs())}
-      placeholder={placeholder}
-      {...props}
-    />
+    <Select options={createAccountOptions(accounts || [])} placeholder={placeholder} {...props} />
   );
 }
 
-export function AddressSelect({ placeholder = 'Select address', ...props }: Props) {
-  const { keyring } = useApi();
-  const { myContracts } = useDatabase();
+export function AddressSelect({ placeholder = 'Select account', ...props }: Props) {
+  const { accounts } = useApi();
+  const { db } = useDatabase();
+  const [contracts] = useDbQuery(() => db.contracts.toArray(), [db]);
 
   const options = useMemo((): GroupBase<DropdownOption<string>>[] => {
     return [
       {
         label: 'My Accounts',
-        options: createAccountOptions(keyring?.getPairs()),
+        options: createAccountOptions(accounts || []),
       },
-      ...(myContracts?.owned && myContracts.owned.length > 0
+      ...(contracts && contracts.length > 0
         ? [
             {
               label: 'Uploaded Contracts',
-              options: (myContracts?.owned || []).map(({ name, address }) => ({
+              options: (contracts || []).map(({ name, address }) => ({
                 label: name,
                 value: address,
               })),
@@ -72,7 +70,7 @@ export function AddressSelect({ placeholder = 'Select address', ...props }: Prop
           ]
         : []),
     ];
-  }, [keyring, myContracts?.owned]);
+  }, [accounts, contracts]);
 
   return <Select options={options} placeholder={placeholder} {...props} />;
 }

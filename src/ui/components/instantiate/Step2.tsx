@@ -1,64 +1,47 @@
 // Copyright 2022 @paritytech/contracts-ui authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
-import BN from 'bn.js';
-import { useEffect, useState } from 'react';
-import { isHex, isNumber } from '@polkadot/util';
-import { randomAsHex } from '@polkadot/util-crypto';
+import { useEffect, useMemo, useState } from 'react';
+import { useParams } from 'react-router';
 import { Button, Buttons } from '../common/Button';
 import { Form, FormField, getValidation } from '../form/FormField';
 import { InputBalance } from '../form/InputBalance';
 import { InputSalt } from '../form/InputSalt';
 import { InputGas } from '../form/InputGas';
 import { InputStorageDepositLimit } from '../form/InputStorageDepositLimit';
+import { isNumber, genRanHex, transformUserInput, BN_ZERO } from 'helpers';
 import { ArgumentForm } from 'ui/components/form/ArgumentForm';
 import { Dropdown } from 'ui/components/common/Dropdown';
 import { createConstructorOptions } from 'ui/util/dropdown';
-import { useInstantiate } from 'ui/contexts';
+import { useApi, useInstantiate } from 'ui/contexts';
 import { useBalance } from 'ui/hooks/useBalance';
 import { useArgValues } from 'ui/hooks/useArgValues';
 import { useFormField } from 'ui/hooks/useFormField';
-import { useWeight } from 'ui/hooks/useWeight';
+import { useGas } from 'ui/hooks/useGas';
 import { useToggle } from 'ui/hooks/useToggle';
-
 import { AbiMessage, OrFalsy } from 'types';
 import { useStorageDepositLimit } from 'ui/hooks/useStorageDepositLimit';
-import { useDebounce } from 'ui/hooks';
+
+function validateSalt(value: OrFalsy<string>) {
+  if (!!value && value.length === 66) {
+    return { isValid: true };
+  }
+
+  return { isValid: false, isError: true, message: 'Invalid hex string' };
+}
 
 export function Step2() {
-  const {
-    data: { accountId, metadata },
-    dryRunResult,
-    stepBackward,
-    currentStep,
-    onFinalize,
-    onFormChange,
-  } = useInstantiate();
-
-  const { value, onChange: onChangeValue, ...valueValidation } = useBalance(10000);
-  const dbValue = useDebounce(value);
-
-  const [estimatedWeight, setEstimatedWeight] = useState<OrFalsy<BN>>(null);
-  const weight = useWeight(estimatedWeight);
-  const dbWeight = useDebounce(weight.weight);
-
-  const storageDepositLimit = useStorageDepositLimit(accountId);
-  const dbStorageDepositLimit = useDebounce(storageDepositLimit.value);
-
-  const salt = useFormField<string>(randomAsHex(), value => {
-    if (!!value && isHex(value) && value.length === 66) {
-      return { isValid: true };
-    }
-
-    return { isValid: false, isError: true, message: 'Invalid hex string' };
-  });
-  const dbSalt = useDebounce(salt.value);
-
+  const { api } = useApi();
+  const { data, setStep, step, setData, dryRunResult, setDryRunResult } = useInstantiate();
+  const { accountId, metadata } = data;
   const [constructorIndex, setConstructorIndex] = useState<number>(0);
   const [deployConstructor, setDeployConstructor] = useState<AbiMessage>();
-
-  const [argValues, setArgValues] = useArgValues(deployConstructor?.args || null);
-  const dbArgValues = useDebounce(argValues);
+  const { value, onChange: onChangeValue, ...valueValidation } = useBalance(BN_ZERO);
+  const gas = useGas(dryRunResult?.gasRequired);
+  const storageDepositLimit = useStorageDepositLimit(accountId);
+  const salt = useFormField<string>(genRanHex(64), validateSalt);
+  const [argValues, setArgValues] = useArgValues(deployConstructor?.args ?? [], metadata?.registry);
+  const { codeHash: codeHashUrlParam } = useParams<{ codeHash: string }>();
 
   useEffect(() => {
     setConstructorIndex(0);
@@ -68,70 +51,78 @@ export function Step2() {
   const [isUsingSalt, toggleIsUsingSalt] = useToggle(true);
   const [isUsingStorageDepositLimit, toggleIsUsingStorageDepositLimit] = useToggle();
 
+  const params = useMemo(() => {
+    const inputData = deployConstructor?.toU8a(
+      transformUserInput(api.registry, deployConstructor.args, argValues)
+    );
+
+    return {
+      origin: accountId,
+      value: deployConstructor?.isPayable ? value : BN_ZERO,
+      gasLimit: gas.mode === 'custom' ? gas.limit : gas.max,
+      storageDepositLimit: isUsingStorageDepositLimit ? storageDepositLimit.value : undefined,
+      code: codeHashUrlParam
+        ? { Existing: codeHashUrlParam }
+        : { Upload: metadata?.info.source.wasm },
+      data: inputData,
+      salt: salt.value ?? null,
+    };
+  }, [
+    accountId,
+    api.registry,
+    argValues,
+    codeHashUrlParam,
+    deployConstructor,
+    isUsingStorageDepositLimit,
+    metadata?.info.source.wasm,
+    salt.value,
+    storageDepositLimit.value,
+    value,
+    gas.max,
+    gas.limit,
+    gas.mode,
+  ]);
+
+  useEffect((): void => {
+    async function dryRun() {
+      try {
+        const result = await api.call.contractsApi.instantiate(
+          params.origin,
+          params.value ?? 0,
+          params.gasLimit,
+          params.storageDepositLimit ?? null,
+          params.code,
+          params.data ?? '',
+          params.salt
+        );
+        setDryRunResult(result);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    dryRun().catch(e => console.error(e));
+  }, [api.call.contractsApi, params, setDryRunResult]);
+
   const onSubmit = () => {
-    onFinalize &&
-      onFinalize({
-        constructorIndex,
-        salt: isUsingSalt ? salt.value : undefined,
-        value,
-        argValues,
-        storageDepositLimit: isUsingStorageDepositLimit ? storageDepositLimit.value : undefined,
-        weight: weight.isActive ? weight.weight : estimatedWeight || weight.defaultWeight,
-      });
+    const { salt, storageDepositLimit, value } = params;
+    const { storageDeposit, gasRequired } = dryRunResult ?? {};
+    setData({
+      ...data,
+      constructorIndex,
+      salt,
+      value,
+      argValues,
+      storageDepositLimit: isUsingStorageDepositLimit
+        ? storageDepositLimit
+        : storageDeposit?.isCharge
+        ? storageDeposit?.asCharge
+        : undefined,
+      weight: gas.mode === 'custom' ? gas.limit : gasRequired ?? gas.max,
+    });
+    setStep(3);
   };
 
-  useEffect((): void => {
-    if (
-      dryRunResult?.result.isOk &&
-      dryRunResult.gasRequired &&
-      !estimatedWeight?.eq(dryRunResult.gasRequired)
-    ) {
-      setEstimatedWeight(dryRunResult.gasRequired);
-    }
-  }, [
-    dryRunResult?.result.isOk,
-    dryRunResult?.result.isErr,
-    dryRunResult?.gasRequired,
-    estimatedWeight,
-  ]);
-
-  useEffect((): void => {
-    onFormChange &&
-      onFormChange({
-        constructorIndex,
-        salt: isUsingSalt ? dbSalt : null,
-        value: dbValue && deployConstructor?.isPayable ? dbValue : null,
-        argValues: dbArgValues,
-        storageDepositLimit: isUsingStorageDepositLimit ? dbStorageDepositLimit : null,
-        weight: weight.isActive ? dbWeight : weight.defaultWeight,
-      });
-  }, [
-    onFormChange,
-    constructorIndex,
-    deployConstructor,
-    dbSalt,
-    dbValue,
-    dbArgValues,
-    dbStorageDepositLimit,
-    dbWeight,
-    isUsingSalt,
-    isUsingStorageDepositLimit,
-    weight.defaultWeight,
-    weight.isActive,
-  ]);
-
-  useEffect(
-    (): void => {
-      if (!metadata) {
-        setEstimatedWeight(null);
-        weight.setIsActive(false);
-      }
-    },
-    // eslint-disable-next-line
-    [metadata]
-  );
-
-  if (currentStep !== 2) return null;
+  if (step !== 2) return null;
 
   return metadata ? (
     <>
@@ -143,7 +134,7 @@ export function Step2() {
         >
           <Dropdown
             id="constructor"
-            options={createConstructorOptions(metadata.constructors)}
+            options={createConstructorOptions(metadata.registry, metadata.constructors)}
             className="mb-4"
             value={constructorIndex}
             onChange={v => {
@@ -184,42 +175,46 @@ export function Step2() {
         >
           <InputSalt isActive={isUsingSalt} toggleIsActive={toggleIsUsingSalt} {...salt} />
         </FormField>
-        <FormField
-          help="The maximum amount of gas (in millions of units) to use for this instantiation. If the transaction requires more, it will fail."
-          id="maxGas"
-          label="Max Gas Allowed"
-          isError={!weight.isValid}
-          message={!weight.isValid ? 'Invalid gas limit' : null}
-        >
-          <InputGas isCall withEstimate {...weight} />
-        </FormField>
-        <FormField
-          help="The maximum balance allowed to be deducted for the new contract's storage deposit."
-          id="storageDepositLimit"
-          label="Storage Deposit Limit"
-          isError={!storageDepositLimit.isValid}
-          message={
-            !storageDepositLimit.isValid
-              ? storageDepositLimit.message || 'Invalid storage deposit limit'
-              : null
-          }
-        >
-          <InputStorageDepositLimit
-            isActive={isUsingStorageDepositLimit}
-            toggleIsActive={toggleIsUsingStorageDepositLimit}
-            {...storageDepositLimit}
-          />
-        </FormField>
+
+        <div className="flex justify-between">
+          <FormField
+            help="The maximum amount of gas (in millions of units) to use for this instantiation. If the transaction requires more, it will fail."
+            id="maxGas"
+            label="Max Gas Allowed"
+            isError={!gas.isValid}
+            message={!gas.isValid && gas.errorMsg}
+            className="basis-2/4 mr-4"
+          >
+            <InputGas {...gas} estimatedWeight={dryRunResult?.gasRequired} />
+          </FormField>
+          <FormField
+            help="The maximum balance allowed to be deducted for the new contract's storage deposit."
+            id="storageDepositLimit"
+            label="Storage Deposit Limit"
+            isError={!storageDepositLimit.isValid}
+            message={
+              !storageDepositLimit.isValid
+                ? storageDepositLimit.message || 'Invalid storage deposit limit'
+                : null
+            }
+            className="basis-2/4 shrink-0"
+          >
+            <InputStorageDepositLimit
+              isActive={isUsingStorageDepositLimit}
+              toggleIsActive={toggleIsUsingStorageDepositLimit}
+              {...storageDepositLimit}
+            />
+          </FormField>
+        </div>
       </Form>
       <Buttons>
         <Button
           isDisabled={
             (deployConstructor?.isPayable && !valueValidation.isValid) ||
             (isUsingSalt && !salt.isValid) ||
-            !weight.isValid ||
+            !gas.isValid ||
             !storageDepositLimit.isValid ||
             !deployConstructor?.method ||
-            !argValues ||
             (dryRunResult && dryRunResult.result.isErr)
           }
           onClick={onSubmit}
@@ -229,7 +224,12 @@ export function Step2() {
           Next
         </Button>
 
-        <Button onClick={stepBackward} variant="default">
+        <Button
+          onClick={() => {
+            setStep(1);
+          }}
+          variant="default"
+        >
           Go Back
         </Button>
       </Buttons>

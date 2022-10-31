@@ -1,7 +1,7 @@
 // Copyright 2022 @paritytech/contracts-ui authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { Button, Buttons } from '../common/Button';
 import { Input, InputFile, Form, FormField, useMetadataField, getValidation } from '../form';
@@ -9,15 +9,20 @@ import { Loader } from '../common/Loader';
 import { AccountSelect } from '../account';
 import { CodeHash } from './CodeHash';
 import { useNonEmptyString } from 'ui/hooks/useNonEmptyString';
-import { useInstantiate } from 'ui/contexts';
-import { useAccountId } from 'ui/hooks';
+import { useApi, useDatabase, useInstantiate } from 'ui/contexts';
+import { useDbQuery } from 'ui/hooks';
 
 export function Step1() {
   const { codeHash: codeHashUrlParam } = useParams<{ codeHash: string }>();
+  const { db } = useDatabase();
+  const [codeBundle] = useDbQuery(
+    () => (codeHashUrlParam ? db.codeBundles.get({ codeHash: codeHashUrlParam }) : undefined),
+    [codeHashUrlParam, db]
+  );
+  const { accounts } = useApi();
+  const { setStep, setData, data, step } = useInstantiate();
 
-  const { stepForward, setData, data, currentStep } = useInstantiate();
-
-  const { value: accountId, onChange: setAccountId, ...accountIdValidation } = useAccountId();
+  const [accountId, setAccountId] = useState('');
   const { value: name, onChange: setName, ...nameValidation } = useNonEmptyString();
 
   const {
@@ -31,10 +36,15 @@ export function Step1() {
   } = useMetadataField();
 
   useEffect((): void => {
-    if (metadata && !name) {
-      setName(metadata.info.contract.name.toString());
+    if (metadataValidation.name) {
+      setName(metadataValidation.name);
     }
-  }, [metadata, name, setName]);
+  }, [metadataValidation.name, setName]);
+
+  useEffect((): void => {
+    if (!accounts || accounts.length === 0) return;
+    setAccountId(accounts[0].address);
+  }, [accounts]);
 
   function submitStep1() {
     setData &&
@@ -46,10 +56,10 @@ export function Step1() {
         codeHash: codeHashUrlParam,
       });
 
-    stepForward && stepForward();
+    setStep(2);
   }
 
-  if (currentStep !== 1) return null;
+  if (step !== 1) return null;
 
   return (
     <Loader isLoading={isLoading}>
@@ -58,7 +68,6 @@ export function Step1() {
           help="The account to use for this instantiation. The fees and storage deposit will be deducted from this account."
           id="accountId"
           label="Account"
-          {...accountIdValidation}
         >
           <AccountSelect
             id="accountId"
@@ -80,13 +89,13 @@ export function Step1() {
             onChange={setName}
           />
         </FormField>
-        {codeHashUrlParam && (
+        {codeHashUrlParam && codeBundle && (
           <FormField
             help="The on-chain code hash that will be reinstantiated as a new contract."
             id="metadata"
             label="On-Chain Code"
           >
-            <CodeHash codeHash={codeHashUrlParam} name={name} />
+            <CodeHash codeHash={codeHashUrlParam} name={codeBundle.name} />
           </FormField>
         )}
         {(!codeHashUrlParam || !isStored) && (

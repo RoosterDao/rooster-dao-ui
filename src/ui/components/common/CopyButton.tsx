@@ -6,7 +6,7 @@ import React, { useCallback, useRef } from 'react';
 import { DocumentDuplicateIcon } from '@heroicons/react/outline';
 import ReactTooltip from 'react-tooltip';
 import { Button } from './Button';
-import { classes } from 'ui/util';
+import { classes } from 'helpers';
 
 interface Props extends React.HTMLAttributes<unknown> {
   iconClassName?: string;
@@ -38,7 +38,7 @@ export function CopyButton({ className, iconClassName, value }: Props) {
         />
       </Button>
       <ReactTooltip
-        afterShow={() => setTimeout(() => ref.current && ReactTooltip.hide(ref.current), 1000)}
+        afterShow={() => setTimeout(() => ref.current && ReactTooltip.hide(ref.current), 300)}
         id={id}
         event="none"
       >

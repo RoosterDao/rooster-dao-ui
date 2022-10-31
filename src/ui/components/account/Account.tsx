@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 import { Identicon } from './Identicon';
-import { classes, truncate } from 'ui/util';
+import { classes, truncate } from 'helpers';
 import { OrFalsy } from 'types';
-import { useAccount } from 'ui/hooks/useAccount';
+import { useApi } from 'ui/contexts';
 
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
   name?: React.ReactNode;
@@ -13,7 +13,9 @@ interface Props extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export function Account({ className, name: propsName, size = 42, value }: Props) {
-  const account = useAccount(value);
+  const { accounts } = useApi();
+
+  const account = accounts?.find(a => a.address === value);
   const name = propsName || account?.meta.name;
 
   if (!value) {
@@ -25,11 +27,16 @@ export function Account({ className, name: propsName, size = 42, value }: Props)
       <Identicon size={size} value={value} className="pr-2" />
       <div className="flex-1 block truncate">
         {name && (
-          <span className="flex font-semibold text-base dark:text-gray-300 text-gray-700">
+          <span
+            className="flex font-semibold text-base dark:text-gray-300 text-gray-700"
+            data-cy="account-name"
+          >
             {name}
           </span>
         )}
-        <p className="text-gray-500 text-xs">{truncate(value, 4)}</p>
+        <p data-cy="account-address" className="text-gray-500 text-xs">
+          {truncate(value, 4)}
+        </p>
       </div>
     </div>
   );

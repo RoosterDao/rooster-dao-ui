@@ -2,33 +2,22 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 import { useCallback, useState } from 'react';
-import { isNumber } from '@polkadot/util';
 import { Dropdown } from '../common/Dropdown';
 import { ArgSignature } from '../message/ArgSignature';
 import { FormField, getValidation } from './FormField';
-import { OrFalsy, Registry, SimpleSpread, TypeDef, ValidFormField } from 'types';
+import { isNumber, getInitValue } from 'helpers';
+import { ArgComponentProps, OrFalsy, TypeDef } from 'types';
 import { useApi } from 'ui/contexts';
-import { getInitValue } from 'ui/util';
 
-type Props = SimpleSpread<
-  React.InputHTMLAttributes<HTMLInputElement>,
-  ValidFormField<Record<string, unknown>>
-> & {
-  components: React.ComponentType<ValidFormField<unknown>>[];
-  registry: Registry;
-  typeDef: TypeDef;
-};
+interface Props extends ArgComponentProps<Record<string, unknown>> {
+  components: React.ComponentType<ArgComponentProps<unknown>>[];
+}
 
 export function Enum(props: Props) {
-  const { components, typeDef, onChange: _onChange, registry, value = {} } = props;
+  const { components, typeDef, nestingNumber, onChange: _onChange, registry, value } = props;
   const variants = typeDef.sub as TypeDef[];
-  const { keyring } = useApi();
-  const [variantIndex, _setVariantIndex] = useState<number>(
-    Math.max(
-      0,
-      variants.findIndex(({ name }) => name === Object.keys(value)[0])
-    )
-  );
+  const { accounts } = useApi();
+  const [variantIndex, _setVariantIndex] = useState<number>(0);
 
   const Component = components[variantIndex];
 
@@ -45,11 +34,11 @@ export function Enum(props: Props) {
         _setVariantIndex(value);
 
         _onChange({
-          [variants[value].name as string]: getInitValue(registry, keyring, variants[value]),
+          [variants[value].name as string]: getInitValue(registry, accounts || [], variants[value]),
         });
       }
     },
-    [registry, keyring, _onChange, variants]
+    [registry, accounts, _onChange, variants]
   );
 
   return (
@@ -61,11 +50,17 @@ export function Enum(props: Props) {
       />
       {variants[variantIndex].type !== 'Null' && (
         <FormField
-          className="ml-8 mt-2"
-          label={<ArgSignature arg={{ type: variants[variantIndex] }} />}
+          className={`ml-8 mt-2 enum-field-${nestingNumber}`}
+          label={<ArgSignature arg={{ type: variants[variantIndex] }} registry={registry} />}
           {...getValidation(props)}
         >
-          <Component value={Object.values(value)[0]} onChange={onChange} />
+          <Component
+            nestingNumber={nestingNumber + 1}
+            value={!!value && typeof value === 'object' ? Object.values(value)[0] : {}}
+            onChange={onChange}
+            registry={registry}
+            typeDef={variants[variantIndex]}
+          />
         </FormField>
       )}
     </>
