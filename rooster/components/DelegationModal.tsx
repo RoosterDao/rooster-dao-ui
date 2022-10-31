@@ -1,14 +1,13 @@
 /** @format */
 import { ModalBase as Modal, ModalProps } from '../../src/ui/components/modal/ModalBase';
 import { Form, FormField } from '../../src/ui/components/form';
-import { useAccountId } from '../../src/ui/hooks';
 import { AccountSelect } from '../../src/ui/components/account';
 import { Button, Buttons, LoaderSmall } from '../../src/ui/components';
-import { TransactionOptions } from './TransactionOptions';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TxState } from './Page';
 import { ExclamationCircleIcon } from '@heroicons/react/outline';
 import { useDelegate } from '../lib/api';
+import { useApi } from '../../src/ui/contexts';
 
 interface Props extends ModalProps {
   onSuccess: () => any;
@@ -16,7 +15,14 @@ interface Props extends ModalProps {
 }
 
 export const DelegationModal = ({ isOpen, setIsOpen, onSuccess, dao }: Omit<Props, 'title'>) => {
-  const { value: accountId, onChange: setAccountId, ...accountIdValidation } = useAccountId();
+  const [value, setAccountId] = useState('');
+  const { accounts } = useApi();
+
+  useEffect((): void => {
+    if (!accounts || accounts.length === 0) return;
+    setAccountId(accounts[0].address);
+  }, [accounts]);
+
   const [options, setOptions] = useState({
     gasLimit: null,
     storageDepositLimit: null,
@@ -44,7 +50,6 @@ export const DelegationModal = ({ isOpen, setIsOpen, onSuccess, dao }: Omit<Prop
             {...accountIdValidation}
           />
         </FormField>
-        <TransactionOptions setOptions={setOptions} mutating={true}></TransactionOptions>
         {txState !== 'wait' && (
           <Buttons>
             <Button

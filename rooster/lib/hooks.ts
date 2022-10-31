@@ -1,7 +1,8 @@
 // rooster dao
 
-import { useEffect, useLayoutEffect } from 'react';
-import { useAccountId, useLocalStorage } from '../../src/ui/hooks';
+import { useEffect, useLayoutEffect, useState } from 'react';
+import { useLocalStorage } from '../../src/ui/hooks';
+import { useApi } from '../../src/ui/contexts';
 import { BehaviorSubject } from 'rxjs';
 
 const DAO_LOCAL_STORAGE = 'rooster_dao_daos';
@@ -119,7 +120,13 @@ export function useDaos() {
 }
 
 export const useGlobalAccountId = () => {
-  const { value, onChange: setAccountId, ...accountIdValidation } = useAccountId();
+  const [value, setAccountId] = useState('');
+  const { accounts } = useApi();
+
+  useLayoutEffect((): void => {
+    if (!accounts || accounts.length === 0) return;
+    setAccountId(accounts[0].address);
+  }, [accounts]);
 
   const onChange = acc => {
     accountSubject.next(acc);
@@ -133,5 +140,5 @@ export const useGlobalAccountId = () => {
     };
   }, []);
 
-  return { value, onChange, ...accountIdValidation };
+  return { value, onChange };
 };

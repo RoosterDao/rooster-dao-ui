@@ -9,7 +9,6 @@ import { useApi } from '../../src/ui/contexts';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useDaos, useGlobalAccountId, useProposals } from '../lib/hooks';
-import { TransactionOptions } from './TransactionOptions';
 import { Link } from 'react-router-dom';
 import { ArrowCircleLeftIcon, ExclamationCircleIcon } from '@heroicons/react/outline';
 
@@ -103,7 +102,6 @@ export function AddProposal() {
                 <div>TBD</div>
               </FormField>
 
-              <TransactionOptions setOptions={setOptions} mutating={true}></TransactionOptions>
 
               {txState === 'fail' && (
                 <div className="flex">

@@ -20,7 +20,6 @@ import { useBalance, useFormField } from '../../src/ui/hooks';
 import { useEffect, useState } from 'react';
 import BN from 'bn.js';
 import { useNavigate } from 'react-router';
-import { TransactionOptions } from './TransactionOptions';
 import { useDaos } from '../lib/hooks';
 import { checkOnChainCode } from '../../src/api';
 import { ExclamationCircleIcon } from '@heroicons/react/outline';
@@ -282,7 +281,6 @@ export function AddDao() {
                   isDisabled={isDisabled}
                 />
               </FormField>
-              <TransactionOptions setOptions={setOptions}></TransactionOptions>
               {txState === 'fail' && (
                 <div className="flex">
                   <ExclamationCircleIcon className="w-10 h-10 text-red-400 mb-3" />

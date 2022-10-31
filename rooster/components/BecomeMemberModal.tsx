@@ -3,7 +3,6 @@ import { ModalBase as Modal, ModalProps } from '../../src/ui/components/modal/Mo
 import { Form } from '../../src/ui/components/form';
 import { useBalance } from '../../src/ui/hooks';
 import { Button, Buttons, LoaderSmall } from '../../src/ui/components';
-import { TransactionOptions } from './TransactionOptions';
 import { useEffect, useState } from 'react';
 import { useBecomeMember, useGetNftPrice } from '../lib/api';
 import { formatBalance } from '@polkadot/util';
@@ -38,7 +37,6 @@ export const BecomeMemberModal = ({ isOpen, setIsOpen, dao, onSuccess }: Omit<Pr
           Get the NFT for <strong className="text-gray-800">{formatBalance(nftPrice)}</strong> to
           become a member of the DAO.
         </label>
-        <TransactionOptions setOptions={setOptions} mutating={true}></TransactionOptions>
         {txState !== 'wait' && (
           <Buttons>
             <Button
