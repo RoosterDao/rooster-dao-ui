@@ -1,7 +1,7 @@
 // Copyright 2022 @paritytech/contracts-ui authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
-import { classes } from 'ui/util';
+import { classes } from 'helpers';
 
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
   strokeWidth?: number;
@@ -28,6 +28,7 @@ export function Spinner({
         'border-solid rounded-full animate-spin',
         className
       )}
+      data-cy="spinner"
     />
   );
 }

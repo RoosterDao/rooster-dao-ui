@@ -1,33 +1,52 @@
 // Copyright 2022 @paritytech/contracts-ui authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
-import { formatBalance, formatNumber } from '@polkadot/util';
 import { useParams } from 'react-router';
+import { useEffect, useState } from 'react';
 import { Account } from '../account/Account';
 import { Button, Buttons } from '../common/Button';
-import { useApi, useInstantiate, isResultValid } from 'ui/contexts';
-import { useQueueTx } from 'ui/hooks/useQueueTx';
-
-import { truncate } from 'ui/util';
+import { useApi, useInstantiate, useTransactions } from 'ui/contexts';
+import { createInstantiateTx, truncate, printBN } from 'helpers';
+import { SubmittableResult } from 'types';
+import { useNewContract } from 'ui/hooks';
 
 export function Step3() {
-  const apiState = useApi();
   const { codeHash: codeHashUrlParam } = useParams<{ codeHash: string }>();
-  const { data, currentStep, onUnFinalize, tx, onError, onInstantiate } = useInstantiate();
+  const { data, step, setStep } = useInstantiate();
+  const { api } = useApi();
   const { accountId, value, metadata, weight, name, constructorIndex } = data;
-  const isConstructorPayable = metadata?.constructors[constructorIndex].isPayable;
+  const { queue, process, txs, dismiss } = useTransactions();
+  const [txId, setTxId] = useState<number>(0);
+  const onSuccess = useNewContract();
 
   const displayHash = codeHashUrlParam || metadata?.info.source.wasmHash.toHex();
 
-  const [onSubmit, onCancel, isValid, isProcessing] = useQueueTx(
-    tx,
-    data.accountId,
-    onInstantiate,
-    onError,
-    isResultValid
-  );
+  useEffect(() => {
+    const isValid = (result: SubmittableResult) => !result.isError && !result.dispatchError;
 
-  if (currentStep !== 3) return null;
+    if (data.accountId) {
+      const tx = createInstantiateTx(api, data);
+
+      if (!txId) {
+        const newId = queue({
+          extrinsic: tx,
+          accountId: data.accountId,
+          onSuccess,
+          isValid,
+        });
+        setTxId(newId);
+      }
+    }
+  }, [api, data, queue, onSuccess, txId]);
+
+  const call = () => {
+    async function processTx() {
+      txs[txId]?.status === 'queued' && (await process(txId));
+    }
+    processTx().catch(e => console.error(e));
+  };
+
+  if (step !== 3) return null;
 
   return (
     <>
@@ -43,18 +62,16 @@ export function Step3() {
           <p className="key">Name</p>
           <p className="value">{name}</p>
         </div>
-        {isConstructorPayable && value && (
+        {metadata?.constructors[constructorIndex].isPayable && value && (
           <div className="field">
             <p className="key">Value</p>
-            <p className="value">
-              {formatBalance(value, { decimals: apiState.tokenDecimals, forceUnit: '-' })}
-            </p>
+            <p className="value">{printBN(value)}</p>
           </div>
         )}
 
         <div className="field">
           <p className="key">Weight</p>
-          <p className="value">{formatNumber(weight)}</p>
+          <p className="value">{printBN(weight)}</p>
         </div>
 
         {displayHash && (
@@ -64,19 +81,19 @@ export function Step3() {
           </div>
         )}
 
-        {tx?.args[3] && (
+        {txs[txId]?.extrinsic.args[3] && (
           <div className="field">
             <p className="key">Data</p>
-            <p className="value">{truncate(tx?.args[3].toHex())}</p>
+            <p className="value">{truncate(txs[txId]?.extrinsic.args[3].toHex())}</p>
           </div>
         )}
       </div>
       <Buttons>
         <Button
           variant="primary"
-          isDisabled={!isValid}
-          isLoading={isProcessing}
-          onClick={onSubmit}
+          isDisabled={!txs[txId]?.isValid}
+          isLoading={txs[txId]?.status === 'processing'}
+          onClick={() => call()}
           data-cy="submit-btn"
         >
           Upload and Instantiate
@@ -84,10 +101,11 @@ export function Step3() {
 
         <Button
           onClick={(): void => {
-            onCancel();
-            onUnFinalize && onUnFinalize();
+            dismiss(txId);
+            setTxId(0);
+            setStep(2);
           }}
-          isDisabled={isProcessing}
+          isDisabled={txs[txId]?.status === 'processing'}
         >
           Go Back
         </Button>

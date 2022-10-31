@@ -1,43 +1,28 @@
 // Copyright 2022 @paritytech/contracts-ui authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
+import { keyring } from '@polkadot/ui-keyring';
+
 import type {
   Abi,
   ApiPromise,
-  BlueprintPromise,
-  BlueprintSubmittableResult,
-  CodeSubmittableResult,
   ContractInstantiateResult,
-  ContractPromise,
-  Keyring,
   SubmittableExtrinsic,
   SubmittableResult,
-  VoidFn,
   ChainType,
 } from '../substrate';
-// import type { UseFormField, UseStepper, UseToggle, UseWeight } from './hooks';
+
 import type { BN } from './util';
 
-type Status = 'CONNECT_INIT' | 'CONNECTING' | 'READY' | 'ERROR' | 'LOADING';
+export type Status = 'loading' | 'connected' | 'error';
 
 export interface ApiState extends ChainProperties {
   endpoint: string;
-  keyring: Keyring;
-  keyringStatus: string | null;
-  api: ApiPromise;
-  error: unknown | null;
+  setEndpoint: (e: string) => void;
   status: Status;
+  api: ApiPromise;
+  accounts?: Account[];
 }
-
-export type ApiAction =
-  | { type: 'CONNECT_INIT' }
-  | { type: 'CONNECT'; payload: ApiPromise }
-  | { type: 'CONNECT_READY'; payload: ChainProperties | null }
-  | { type: 'CONNECT_ERROR'; payload: unknown }
-  | { type: 'LOAD_KEYRING' }
-  | { type: 'SET_ENDPOINT'; payload: string }
-  | { type: 'SET_KEYRING'; payload: Keyring }
-  | { type: 'KEYRING_ERROR' };
 
 export interface ChainProperties {
   tokenDecimals: number;
@@ -46,20 +31,18 @@ export interface ChainProperties {
   systemChainType: ChainType;
   systemChain: string;
   tokenSymbol: string;
+  genesisHash: string;
 }
 
-export type OnInstantiateSuccess$Code = (_: CodeSubmittableResult<'promise'>) => Promise<void>;
-export type OnInstantiateSuccess$Hash = (_: BlueprintSubmittableResult<'promise'>) => Promise<void>;
-
 export interface InstantiateData {
-  accountId?: string;
+  accountId: string;
   argValues?: Record<string, unknown>;
-  value?: BN | null;
+  value?: BN;
   metadata?: Abi;
   name: string;
   constructorIndex: number;
-  salt?: string | null;
-  storageDepositLimit?: BN | null;
+  salt?: string;
+  storageDepositLimit?: BN;
   weight: BN;
   codeHash?: string;
 }
@@ -68,19 +51,11 @@ export type Step2FormData = Omit<InstantiateData, 'accountId' | 'name'>;
 
 export interface InstantiateState {
   data: InstantiateData;
+  setData: React.Dispatch<React.SetStateAction<InstantiateData>>;
+  step: 1 | 2 | 3;
+  setStep: React.Dispatch<1 | 2 | 3>;
   dryRunResult?: ContractInstantiateResult;
-  setData?: React.Dispatch<React.SetStateAction<InstantiateData>>;
-  onError: () => void;
-  onFinalize?: (_: Partial<InstantiateData>) => void;
-  onFormChange: (_: Step2FormData, __?: boolean, ___?: boolean) => void;
-  onUnFinalize?: () => void;
-  onSuccess: (_: ContractPromise, __?: BlueprintPromise | undefined) => void;
-  onInstantiate: OnInstantiateSuccess$Code | OnInstantiateSuccess$Hash;
-  currentStep: number;
-  stepForward?: VoidFn;
-  stepBackward?: VoidFn;
-  setStep?: React.Dispatch<number>;
-  tx: SubmittableExtrinsic<'promise'> | null;
+  setDryRunResult: (_: ContractInstantiateResult) => void;
 }
 
 export type InstantiateProps = InstantiateState;
@@ -113,3 +88,7 @@ export interface TransactionsState {
   queue: (_: TxOptions) => number;
   dismiss: (id: number) => void;
 }
+
+export type Flatten<Type> = Type extends Array<infer Item> ? Item : Type;
+
+export type Account = Flatten<Awaited<ReturnType<typeof keyring.getAccounts>>>;

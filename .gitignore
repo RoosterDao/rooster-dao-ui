@@ -1,6 +1,4 @@
 vite.config.ts.js
-**/target/**
-Cargo.lock
 
 # Logs
 logs

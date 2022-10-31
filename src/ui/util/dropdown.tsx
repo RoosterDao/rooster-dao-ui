@@ -2,23 +2,36 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 import { MessageSignature } from '../components/message/MessageSignature';
-import { AbiConstructor, AbiMessage, DropdownOption, ContractDocument, KeyringPair } from 'types';
+import {
+  AbiConstructor,
+  AbiMessage,
+  DropdownOption,
+  ContractDocument,
+  Registry,
+  Account,
+} from 'types';
 
-export function createConstructorOptions(data?: AbiConstructor[]): DropdownOption<number>[] {
+export function createConstructorOptions(
+  registry: Registry,
+  data?: AbiConstructor[]
+): DropdownOption<number>[] {
   return (data || []).map((constructor, index) => ({
-    label: <MessageSignature message={constructor} />,
+    label: <MessageSignature message={constructor} registry={registry} />,
     value: index,
   }));
 }
 
-export function createMessageOptions(data?: AbiMessage[]): DropdownOption<AbiMessage>[] {
+export function createMessageOptions(
+  registry: Registry,
+  data?: AbiMessage[]
+): DropdownOption<AbiMessage>[] {
   return (data || []).map(message => ({
-    label: <MessageSignature message={message} />,
+    label: <MessageSignature message={message} registry={registry} />,
     value: message,
   }));
 }
 
-export function createAccountOptions(data: Partial<KeyringPair>[]): DropdownOption<string>[] {
+export function createAccountOptions(data: Account[]): DropdownOption<string>[] {
   return data.map(pair => ({
     label: pair.meta?.name as string,
     value: pair.address || '',

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router';
 import { Dropdown } from '../common/Dropdown';
 import { RPC } from '../../../constants';
 import { useApi } from 'ui/contexts';
-import { classes } from 'ui/util';
+import { classes } from 'helpers';
 
 const options = [
   {
@@ -15,6 +15,26 @@ const options = [
   {
     label: 'Rooster Node',
     value: RPC.ROOSTER,
+  },
+  {
+    label: 'Contracts (Rococo)',
+    value: RPC.CONTRACTS,
+  },
+  {
+    label: 'Shibuya',
+    value: RPC.SHIBUYA,
+  },
+  {
+    label: 'Shiden',
+    value: RPC.SHIDEN,
+  },
+  {
+    label: 'Aleph Zero Testnet',
+    value: RPC.ALEPHZEROTESTNET,
+  },
+  {
+    label: 'Local Node',
+    value: RPC.LOCAL,
   },
 ];
 
@@ -27,15 +47,15 @@ export function NetworkAndUser() {
       <Dropdown
         className={classes(
           'chain',
-          status === 'READY' ? 'isConnected' : '',
-          status === 'CONNECTING' ? 'isConnecting' : '',
-          status === 'ERROR' ? 'isError' : ''
+          status === 'connected' ? 'isConnected' : '',
+          status === 'loading' ? 'isConnecting' : '',
+          status === 'error' ? 'isError' : ''
         )}
         onChange={e => {
           navigate(`/?rpc=${e}`);
         }}
         options={options}
-        value={options.find(o => o.value === endpoint)?.value || 'ws://127.0.0.1:9944'}
+        value={options.find(o => o.value === endpoint)?.value || RPC.CONTRACTS}
       />
     </div>
   );

@@ -1,16 +1,14 @@
 // Copyright 2022 @paritytech/contracts-ui authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
-import { formatBalance, formatNumber } from '@polkadot/util';
 import { CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/outline';
 import { SidePanel } from '../common/SidePanel';
 import { Account } from '../account/Account';
 import { useApi, useInstantiate } from 'ui/contexts';
 
 export function DryRun() {
-  const { api } = useApi();
   const { dryRunResult } = useInstantiate();
-
+  const { api } = useApi();
   const dryRunError =
     dryRunResult?.result.isErr && dryRunResult?.result.asErr.isModule
       ? api.registry.findMetaError(dryRunResult?.result.asErr.asModule)
@@ -18,18 +16,20 @@ export function DryRun() {
 
   return (
     <SidePanel className="instantiate-outcome" header="Predicted Outcome">
-      <div className="body">
+      <div className="body" data-cy="dry-run-result">
         <div className="row">
           <div>Gas Required:</div>
-          <div>{dryRunResult?.gasRequired && <>{formatNumber(dryRunResult.gasRequired)}</>}</div>
+          <div data-cy="estimated-gas">
+            {dryRunResult?.gasRequired && <>{dryRunResult.gasRequired.toHuman()}</>}
+          </div>
         </div>
         <div className="row">
           <div>Gas Consumed:</div>
-          <div>{dryRunResult?.gasConsumed && <>{formatNumber(dryRunResult.gasConsumed)}</>}</div>
+          <div>{dryRunResult?.gasConsumed && <>{dryRunResult.gasConsumed.toHuman()}</>}</div>
         </div>
         <div className="row">
           <div>Storage Deposit:</div>
-          <div>
+          <div data-cy="estimated-storage-deposit">
             {dryRunResult?.storageDeposit &&
               (() => {
                 if (dryRunResult.storageDeposit.isCharge) {
@@ -37,7 +37,7 @@ export function DryRun() {
                     return 'None';
                   }
 
-                  return formatBalance(dryRunResult.storageDeposit.asCharge, { decimals: 12 });
+                  return dryRunResult.storageDeposit.asCharge.toHuman();
                 }
 
                 return 'None';
@@ -46,7 +46,7 @@ export function DryRun() {
         </div>
         <div className="row h-8">
           <div>Contract Address:</div>
-          <div>
+          <div data-cy="dry-run-account">
             {dryRunResult?.result.isOk ? (
               <Account size={26} value={dryRunResult?.result.asOk.accountId.toString()} />
             ) : (
