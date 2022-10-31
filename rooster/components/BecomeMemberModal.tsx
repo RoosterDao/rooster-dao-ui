@@ -22,7 +22,8 @@ export const BecomeMemberModal = ({ isOpen, setIsOpen, dao, onSuccess }: Omit<Pr
   const [deploymentMessage, setDeploymentMessage] = useState('');
 
   useEffect(() => {
-    queryGetNftPrice().then(setNftPrice);
+    queryGetNftPrice().then(x => 
+      setNftPrice(x));
   }, []);
 
   const [options, setOptions] = useState({
@@ -45,7 +46,7 @@ export const BecomeMemberModal = ({ isOpen, setIsOpen, dao, onSuccess }: Omit<Pr
                 try {
                   setTxState('wait');
                   setDeploymentMessage('Your NFT is being minted');
-                  await becomeMember(dao, options, nftPrice);
+                  await becomeMember(dao, options, nftPrice.toBn());
                   onSuccess();
                   setIsOpen(false);
                 } catch (e) {

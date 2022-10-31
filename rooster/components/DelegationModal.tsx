@@ -15,7 +15,7 @@ interface Props extends ModalProps {
 }
 
 export const DelegationModal = ({ isOpen, setIsOpen, onSuccess, dao }: Omit<Props, 'title'>) => {
-  const [value, setAccountId] = useState('');
+  const [accountId, setAccountId] = useState('');
   const { accounts } = useApi();
 
   useEffect((): void => {
@@ -40,14 +40,12 @@ export const DelegationModal = ({ isOpen, setIsOpen, onSuccess, dao }: Omit<Prop
           id="labelDelegation"
           label="Delegate your voting power to yourself or another account:"
           isError={false}
-          {...accountIdValidation}
         >
           <AccountSelect
             isDisabled={false}
             id="accountId"
             value={accountId}
             onChange={setAccountId}
-            {...accountIdValidation}
           />
         </FormField>
         {txState !== 'wait' && (

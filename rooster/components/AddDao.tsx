@@ -21,7 +21,7 @@ import { useEffect, useState } from 'react';
 import BN from 'bn.js';
 import { useNavigate } from 'react-router';
 import { useDaos } from '../lib/hooks';
-import { checkOnChainCode } from '../../src/api';
+import { checkOnChainCode } from '../../src/helpers';
 import { ExclamationCircleIcon } from '@heroicons/react/outline';
 
 const templateOptions = [

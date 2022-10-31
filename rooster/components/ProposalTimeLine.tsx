@@ -3,7 +3,7 @@
 
 import { CheckIcon } from '@heroicons/react/outline';
 import { format } from 'date-fns';
-import { classes } from '../../src/ui/util';
+import { classes } from '../../src/helpers';
 
 export type Step = { name: string; date: number; index: number };
 

@@ -10,13 +10,14 @@ import { useParams } from 'react-router';
 import { Link } from 'react-router-dom';
 import { CopyButton } from '../../src/ui/components/common/CopyButton';
 import { useApi } from '../../src/ui/contexts';
-import { truncate } from '../../src/ui/util';
+import { truncate } from '../../src/helpers';
 import { useCastVote, useGetVotes, useHasVoted, useProposalState } from '../lib/api';
 import { useDaos, useGlobalAccountId, useProposals } from '../lib/hooks';
 import { lastCellHeader, Table, TableRow } from './Table';
 import { Page } from './Page';
 import { Timeline, Step } from './ProposalTimeLine';
 import { VoteType, VotingModal } from './VotingModal';
+import { keyring } from '@polkadot/ui-keyring';
 
 export function ViewProposal() {
   const { address, proposal: proposalId } = useParams();
@@ -28,7 +29,7 @@ export function ViewProposal() {
   const [isOpen, setIsOpen] = useState(false);
   const [proposalVotes, setProposalVotes] = useState({} as Record<string, {}>);
   const [votes, setVotes] = useState(0);
-  const { keyring } = useApi();
+ // const { keyring } = useApi();
   const { value: accountId } = useGlobalAccountId();
   const { getDao } = useDaos();
   const dao = getDao(address);

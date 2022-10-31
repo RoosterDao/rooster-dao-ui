@@ -11,6 +11,7 @@ import { useNavigate, useParams } from 'react-router';
 import { useDaos, useGlobalAccountId, useProposals } from '../lib/hooks';
 import { Link } from 'react-router-dom';
 import { ArrowCircleLeftIcon, ExclamationCircleIcon } from '@heroicons/react/outline';
+import { keyring } from '@polkadot/ui-keyring';
 
 export function AddProposal() {
   const { address } = useParams();
@@ -23,7 +24,7 @@ export function AddProposal() {
     value: null,
   });
 
-  const { api, keyring } = useApi();
+  const { api } = useApi();
   const navigate = useNavigate();
   const { value: accountId } = useGlobalAccountId();
   const { getDao } = useDaos();

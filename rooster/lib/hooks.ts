@@ -120,10 +120,10 @@ export function useDaos() {
 }
 
 export const useGlobalAccountId = () => {
-  const [value, setAccountId] = useState('');
   const { accounts } = useApi();
+  const [value, setAccountId] = useState(accounts?.[0]?.address ?? "");
 
-  useLayoutEffect((): void => {
+  useEffect((): void => {
     if (!accounts || accounts.length === 0) return;
     setAccountId(accounts[0].address);
   }, [accounts]);
@@ -140,5 +140,5 @@ export const useGlobalAccountId = () => {
     };
   }, []);
 
-  return { value, onChange };
+  return { value, onChange, accountIdValidation: {} };
 };

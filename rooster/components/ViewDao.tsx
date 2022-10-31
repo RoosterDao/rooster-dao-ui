@@ -3,7 +3,7 @@
 import { Button } from '../../src/ui/components/common';
 import { CopyButton } from '../../src/ui/components/common/CopyButton';
 import { Page } from './Page';
-import { truncate } from '../../src/ui/util';
+import { truncate } from '../../src/helpers';
 import { useDaos, useGlobalAccountId, useProposals } from '../lib/hooks';
 import { useNavigate, useParams } from 'react-router';
 import { Link } from 'react-router-dom';
@@ -31,6 +31,7 @@ import { BecomeMemberModal } from './BecomeMemberModal';
 import { fetchRooster } from '../lib/ipfs-api';
 import { useRmrkAcceptResource, useRmrkCoreResources } from '../lib/runtime-api';
 import { EvolutionModal } from './EvolutionModal';
+import { keyring } from '@polkadot/ui-keyring';
 
 const SHORT_DESCRIPTION_LENGTH = 200;
 const getCID = cid => cid?.replace('ipfs://ipfs/', '') ?? null;
@@ -43,7 +44,7 @@ export function ViewDao() {
   const { address } = useParams();
   if (!address) throw new Error('No address in url');
   const navigate = useNavigate();
-  const { keyring } = useApi();
+  //const { keyring } = useApi();
   const [delegationModalOpen, openDelegationModal] = useState(false);
   const [becomeMemberModalOpen, openBecomeMemberModal] = useState(false);
   const [evolutionModalOpen, openEvolutionModal] = useState(false);

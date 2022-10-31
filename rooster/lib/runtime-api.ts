@@ -3,6 +3,7 @@
 import { resolve } from 'path';
 import { useApi } from '../../src/ui/contexts';
 import { useGlobalAccountId } from './hooks';
+import { keyring } from '@polkadot/ui-keyring';
 
 export function useRmrkCoreResources() {
   const { api } = useApi();
@@ -42,7 +43,7 @@ export function useRmrkCoreResources() {
 }
 
 export const useRmrkAcceptResource = () => {
-  const { api, keyring } = useApi();
+  const { api } = useApi();
   const { value: accountId } = useGlobalAccountId();
 
   const acceptResource = async ({ collectionId, nftId, resourceId }) =>

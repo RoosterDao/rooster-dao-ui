@@ -3,7 +3,7 @@
 import { Button } from '../../src/ui/components/common';
 import { CopyButton } from '../../src/ui/components/common/CopyButton';
 import { Page } from './Page';
-import { truncate } from '../../src/ui/util';
+import { truncate } from '../../src/helpers';
 import { useDaos, useProposals } from '../lib/hooks';
 import { ErrorBoundary } from './ErrorBoundary';
 import { Link, useNavigate } from 'react-router-dom';

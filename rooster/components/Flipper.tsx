@@ -17,6 +17,7 @@ import { getContractInfo, toBalance } from '../../src/api';
 import { Abi, ContractPromise as Contract } from '../../src/types';
 import abi from '../../contracts/examples/flipper/metadata.json';
 import { useGlobalAccountId } from '../lib/hooks';
+import { keyring } from '@polkadot/ui-keyring';
 
 export function Flipper() {
   const [savedAddress, saveAddress] = useLocalStorage<string>('flipper_address', '');
@@ -28,7 +29,7 @@ export function Flipper() {
   const [currentState, setFlipState] = useState<boolean>(false);
   const [flipEvents, setFlipEvents] = useState([]);
 
-  const { api, keyring } = useApi();
+  const { api } = useApi();
   const weight = useWeight(toBalance(api, 1));
   const { data: contractData, isLoading, isValid } = useContract(address);
 

@@ -7,14 +7,21 @@ import {
   ContractPromise as Contract,
   ContractOptions,
   UseBalance,
+  BlueprintOptions,
+  ContractTx,
 } from '../../src/types';
 import { BN } from '@polkadot/util';
 
-import { createInstantiateTx, prepareContractTx, transformUserInput } from '../../src/api';
+import { createInstantiateTx, transformUserInput } from '../../src/helpers';
 import abiJSON from '../lib/metadata.json';
 import { useApi } from '../../src/ui/contexts';
 import { useGlobalAccountId } from './hooks';
 import { Balance } from '@polkadot/types/interfaces';
+import { keyring } from '@polkadot/ui-keyring';
+
+function prepareContractTx(tx: ContractTx<'promise'>, options: BlueprintOptions, args: unknown[]) {
+  return args.length > 0 ? tx(options, ...args) : tx(options);
+}
 
 const abi = new Abi(abiJSON);
 const defaultGasLimit = new BN('100000000000'); //TODO: check best way to determine gas limit
@@ -30,7 +37,7 @@ interface instantiationArgs {
 }
 
 export const useInstantiateDao = () => {
-  const { api, keyring } = useApi();
+  const { api } = useApi();
   const { value: accountId } = useGlobalAccountId();
   const accountOrPair = keyring.getPair(accountId);
 
@@ -107,7 +114,7 @@ export const useInstantiateDao = () => {
 };
 
 export const useBecomeMember = () => {
-  const { api, keyring } = useApi();
+  const { api } = useApi();
   const { value: accountId } = useGlobalAccountId();
   const accountOrPair = keyring.getPair(accountId);
 
@@ -180,7 +187,7 @@ export const propose = ({
   });
 
 export function useDelegate(dao) {
-  const { api, keyring } = useApi();
+  const { api } = useApi();
   const { value: caller } = useGlobalAccountId();
 
   const delegate = (accountId, options) =>
@@ -240,7 +247,7 @@ export function useGetNft(dao: string) {
 }
 
 export function useCastVote(dao) {
-  const { api, keyring } = useApi();
+  const { api } = useApi();
   const { value: caller } = useGlobalAccountId();
 
   const txCastVote = (proposalId, vote, options = {}) =>
